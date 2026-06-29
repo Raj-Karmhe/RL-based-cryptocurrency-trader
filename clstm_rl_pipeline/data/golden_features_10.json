@@ -1,0 +1,12 @@
+[
+  "1d_sma200_dist",
+  "4h_adx",
+  "1d_macd_signal",
+  "1d_hvol_20",
+  "1d_obv_zscore",
+  "1d_bb_pct",
+  "4h_mfi",
+  "4h_bb_width",
+  "1d_cci",
+  "1d_vol_ratio"
+]

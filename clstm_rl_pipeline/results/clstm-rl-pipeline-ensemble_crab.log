@@ -1,0 +1,335 @@
+7.5s 1 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+7.5s 2 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+7.5s 3 0.00s - to python to disable frozen modules.
+7.5s 4 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+8.1s 5 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+8.1s 6 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+8.1s 7 0.00s - to python to disable frozen modules.
+8.1s 8 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+16.9s 9 [?25l     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/151.8 kB[0m [31m?[0m eta [36m-:--:--[0m[2K     [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m151.8/151.8 kB[0m [31m4.5 MB/s[0m eta [36m0:00:00[0m
+17.8s 10 [?25h  Preparing metadata (setup.py) ... [?25l[?25hdone
+18.8s 11 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/6.5 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [91m━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.6/6.5 MB[0m [31m47.6 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m6.5/6.5 MB[0m [31m110.9 MB/s[0m eta [36m0:00:01[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m6.5/6.5 MB[0m [31m66.7 MB/s[0m eta [36m0:00:00[0m
+18.9s 12 [?25h[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/1.6 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.6/1.6 MB[0m [31m75.7 MB/s[0m eta [36m0:00:00[0m
+18.9s 13 [?25h[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/187.6 kB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m187.6/187.6 kB[0m [31m15.7 MB/s[0m eta [36m0:00:00[0m
+19.0s 14 [?25h[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/12.2 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m6.5/12.2 MB[0m [31m195.5 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m12.1/12.2 MB[0m [31m194.1 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m12.1/12.2 MB[0m [31m194.1 MB/s[0m eta [36m0:00:01[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m12.2/12.2 MB[0m [31m97.3 MB/s[0m eta [36m0:00:00[0m
+19.1s 15 [?25h[?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/223.8 kB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m223.8/223.8 kB[0m [31m17.9 MB/s[0m eta [36m0:00:00[0m
+20.4s 16 [?25h  Building wheel for ta (setup.py) ... [?25l[?25hdone
+27.3s 17 [31mERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+27.3s 18 dask-cuda 26.2.0 requires cuda-core==0.3.*, but you have cuda-core 1.0.1 which is incompatible.
+27.3s 19 dask-cuda 26.2.0 requires numba-cuda<0.23.0,>=0.22.1, but you have numba-cuda 0.30.2 which is incompatible.
+27.3s 20 distributed-ucxx-cu12 0.48.0 requires numba-cuda[cu12]<0.23.0,>=0.22.1, but you have numba-cuda 0.30.2 which is incompatible.
+27.3s 21 cuml-cu12 26.2.0 requires numba<0.62.0,>=0.60.0, but you have numba 0.65.1 which is incompatible.
+27.3s 22 cuml-cu12 26.2.0 requires numba-cuda[cu12]<0.23.0,>=0.22.1, but you have numba-cuda 0.30.2 which is incompatible.
+27.3s 23 ucxx-cu12 0.48.0 requires numba-cuda[cu12]<0.23.0,>=0.22.1, but you have numba-cuda 0.30.2 which is incompatible.
+27.3s 24 cudf-cu12 26.2.1 requires numba<0.62.0,>=0.60.0, but you have numba 0.65.1 which is incompatible.
+27.3s 25 cudf-cu12 26.2.1 requires numba-cuda[cu12]<0.23.0,>=0.22.2, but you have numba-cuda 0.30.2 which is incompatible.[0m[31m
+13968.3s 26 [0mStarting Bull Worker on GPU 0...
+13968.3s 27 Starting Bear Worker on GPU 1...
+13968.3s 28 
+13968.3s 29 ======================================================================
+13968.3s 30 PHASE 6 — OPTUNA HYPERPARAMETER OPTIMIZATION (BULL REGIME)
+13968.3s 31 ======================================================================
+13968.3s 32 [Features] 10 golden features loaded.
+13968.3s 33 [Search]   30 trials × 150,000 timesteps each
+13968.3s 34 
+13968.3s 35 ======================================================================
+13968.3s 36 PHASE 6 — OPTUNA HYPERPARAMETER OPTIMIZATION (BEAR REGIME)
+13968.3s 37 ======================================================================
+13968.3s 38 [Features] 10 golden features loaded.
+13968.3s 39 [Search]   30 trials × 150,000 timesteps each
+13968.3s 40 [Device]   CUDA
+13968.3s 41 [Device]   CUDA
+13968.3s 42 [Seed]     Enqueueing baseline trial from config.py defaults...
+13968.3s 43 [Seed]     Enqueueing baseline trial from config.py defaults...
+13968.3s 44 Trial   0 | LR=5.27e-05 | gamma=0.950 | LSTM=64 | sortino_w=0.60 | Sharpe=-2.0925
+13968.3s 45 [Trial   0/  1] *** NEW BEST *** | Sharpe: -2.0925    | Best so far: -2.0925
+13968.3s 46 Trial   0 | LR=5.27e-05 | gamma=0.950 | LSTM=64 | sortino_w=0.60 | Sharpe=-3.7280
+13968.3s 47 [Trial   0/  1] *** NEW BEST *** | Sharpe: -3.7280    | Best so far: -3.7280
+13968.3s 48 Trial   1 | LR=5.61e-05 | gamma=0.902 | LSTM=128 | sortino_w=0.52 | Sharpe=-0.2229
+13968.3s 49 [Trial   1/  2] *** NEW BEST *** | Sharpe: -0.2229    | Best so far: -0.2229
+13968.3s 50 Trial   1 | LR=5.61e-05 | gamma=0.902 | LSTM=128 | sortino_w=0.52 | Sharpe=-4.8144
+13968.3s 51 [Trial   1/  2] done             | Sharpe: -4.8144    | Best so far: -3.7280
+13968.3s 52 Trial   2 | LR=8.17e-05 | gamma=0.996 | LSTM=128 | sortino_w=0.61 | Sharpe=-1.5637
+13968.3s 53 [Trial   2/  3] done             | Sharpe: -1.5637    | Best so far: -0.2229
+13968.3s 54 Trial   2 | LR=8.17e-05 | gamma=0.996 | LSTM=128 | sortino_w=0.61 | Sharpe=+1.3681
+13968.3s 55 [Trial   2/  3] *** NEW BEST *** | Sharpe: +1.3681    | Best so far: +1.3681
+13968.3s 56 Trial   3 | LR=1.24e-04 | gamma=0.904 | LSTM=128 | sortino_w=0.42 | Sharpe=+0.7030
+13968.3s 57 [Trial   3/  4] *** NEW BEST *** | Sharpe: +0.7030    | Best so far: +0.7030
+13968.3s 58 Trial   3 | LR=1.24e-04 | gamma=0.904 | LSTM=128 | sortino_w=0.42 | Sharpe=+3.7890
+13968.3s 59 [Trial   3/  4] *** NEW BEST *** | Sharpe: +3.7890    | Best so far: +3.7890
+13968.3s 60 Trial   4 | LR=1.03e-05 | gamma=0.933 | LSTM=64 | sortino_w=0.60 | Sharpe=+1.7518
+13968.3s 61 [Trial   4/  5] *** NEW BEST *** | Sharpe: +1.7518    | Best so far: +1.7518
+13968.3s 62 Trial   4 | LR=1.03e-05 | gamma=0.933 | LSTM=64 | sortino_w=0.60 | Sharpe=+3.7164
+13968.3s 63 [Trial   4/  5] done             | Sharpe: +3.7164    | Best so far: +3.7890
+13968.3s 64 Trial   5 | LR=1.11e-04 | gamma=0.941 | LSTM=64 | sortino_w=0.62 | Sharpe=+1.7566
+13968.3s 65 [Trial   5/  6] *** NEW BEST *** | Sharpe: +1.7566    | Best so far: +1.7566
+13968.3s 66 Trial   5 | LR=1.11e-04 | gamma=0.941 | LSTM=64 | sortino_w=0.62 | Sharpe=+3.7890
+13968.3s 67 [Trial   5/  6] *** NEW BEST *** | Sharpe: +3.7890    | Best so far: +3.7890
+13968.3s 68 Trial   6 | LR=4.12e-04 | gamma=0.941 | LSTM=128 | sortino_w=0.48 | Sharpe=+1.9740
+13968.3s 69 [Trial   6/  7] *** NEW BEST *** | Sharpe: +1.9740    | Best so far: +1.9740
+13968.3s 70 Trial   6 | LR=4.12e-04 | gamma=0.941 | LSTM=128 | sortino_w=0.48 | Sharpe=-4.7417
+13968.3s 71 [Trial   6/  7] done             | Sharpe: -4.7417    | Best so far: +3.7890
+13968.3s 72 Trial   7 | LR=3.71e-05 | gamma=0.998 | LSTM=32 | sortino_w=0.41 | Sharpe=-1.2900
+13968.3s 73 [Trial   7/  8] done             | Sharpe: -1.2900    | Best so far: +1.9740
+13968.3s 74 Trial   7 | LR=3.71e-05 | gamma=0.998 | LSTM=32 | sortino_w=0.41 | Sharpe=-1.7986
+13968.3s 75 [Trial   7/  8] done             | Sharpe: -1.7986    | Best so far: +3.7890
+13968.3s 76 Trial   8 | LR=1.21e-05 | gamma=0.993 | LSTM=32 | sortino_w=0.84 | Sharpe=+1.7513
+13968.3s 77 [Trial   8/  9] done             | Sharpe: +1.7513    | Best so far: +1.9740
+13968.3s 78 Trial   8 | LR=1.21e-05 | gamma=0.993 | LSTM=32 | sortino_w=0.84 | Sharpe=+3.7863
+13968.3s 79 [Trial   8/  9] done             | Sharpe: +3.7863    | Best so far: +3.7890
+13968.3s 80 Trial   9 | LR=6.32e-04 | gamma=0.916 | LSTM=32 | sortino_w=0.44 | Sharpe=+1.7566
+13968.3s 81 [Trial   9/ 10] done             | Sharpe: +1.7566    | Best so far: +1.9740
+13968.3s 82 Trial   9 | LR=6.32e-04 | gamma=0.916 | LSTM=32 | sortino_w=0.44 | Sharpe=-4.7417
+13968.3s 83 [Trial   9/ 10] done             | Sharpe: -4.7417    | Best so far: +3.7890
+13968.3s 84 Trial  10 | LR=2.16e-04 | gamma=0.965 | LSTM=256 | sortino_w=0.32 | Sharpe=+3.7890
+13968.3s 85 [Trial  10/ 11] *** NEW BEST *** | Sharpe: +3.7890    | Best so far: +3.7890
+13968.3s 86 Trial  10 | LR=8.97e-04 | gamma=0.965 | LSTM=256 | sortino_w=0.32 | Sharpe=+1.4622
+13968.3s 87 [Trial  10/ 11] done             | Sharpe: +1.4622    | Best so far: +1.9740
+13968.3s 88 Trial  11 | LR=1.81e-04 | gamma=0.920 | LSTM=64 | sortino_w=0.75 | Sharpe=+4.1119
+13968.3s 89 [Trial  11/ 12] *** NEW BEST *** | Sharpe: +4.1119    | Best so far: +4.1119
+13968.3s 90 Trial  11 | LR=2.72e-04 | gamma=0.940 | LSTM=64 | sortino_w=0.75 | Sharpe=+1.7419
+13968.3s 91 [Trial  11/ 12] done             | Sharpe: +1.7419    | Best so far: +1.9740
+13968.3s 92 Trial  12 | LR=2.06e-04 | gamma=0.900 | LSTM=256 | sortino_w=0.79 | Sharpe=+1.6572
+13968.3s 93 [Trial  12/ 13] done             | Sharpe: +1.6572    | Best so far: +4.1119
+13968.3s 94 Trial  12 | LR=2.72e-04 | gamma=0.962 | LSTM=256 | sortino_w=0.71 | Sharpe=+1.2964
+13968.3s 95 [Trial  12/ 13] done             | Sharpe: +1.2964    | Best so far: +1.9740
+13968.3s 96 Trial  13 | LR=1.91e-04 | gamma=0.919 | LSTM=128 | sortino_w=0.75 | Sharpe=-0.1008
+13968.3s 97 [Trial  13/ 14] done             | Sharpe: -0.1008    | Best so far: +4.1119
+13968.3s 98 Trial  13 | LR=2.51e-04 | gamma=0.929 | LSTM=128 | sortino_w=0.50 | Sharpe=+1.3616
+13968.3s 99 [Trial  13/ 14] done             | Sharpe: +1.3616    | Best so far: +1.9740
+13968.3s 100 Trial  14 | LR=9.70e-04 | gamma=0.918 | LSTM=64 | sortino_w=0.69 | Sharpe=-4.7417
+13968.3s 101 [Trial  14/ 15] done             | Sharpe: -4.7417    | Best so far: +4.1119
+13968.3s 102 Trial  14 | LR=4.75e-04 | gamma=0.958 | LSTM=64 | sortino_w=0.70 | Sharpe=-1.2989
+13968.3s 103 [Trial  14/ 15] done             | Sharpe: -1.2989    | Best so far: +1.9740
+13968.3s 104 Trial  15 | LR=2.96e-05 | gamma=0.912 | LSTM=128 | sortino_w=0.32 | Sharpe=+0.5300
+13968.3s 105 [Trial  15/ 16] done             | Sharpe: +0.5300    | Best so far: +4.1119
+13968.3s 106 Trial  15 | LR=1.50e-04 | gamma=0.973 | LSTM=128 | sortino_w=0.52 | Sharpe=-1.2989
+13968.3s 107 [Trial  15/ 16] done             | Sharpe: -1.2989    | Best so far: +1.9740
+13968.3s 108 Trial  16 | LR=3.20e-04 | gamma=0.928 | LSTM=64 | sortino_w=0.87 | Sharpe=-0.4889
+13968.3s 109 [Trial  16/ 17] done             | Sharpe: -0.4889    | Best so far: +4.1119
+13968.3s 110 Trial  16 | LR=2.70e-05 | gamma=0.942 | LSTM=64 | sortino_w=0.34 | Sharpe=-1.2914
+13968.3s 111 [Trial  16/ 17] done             | Sharpe: -1.2914    | Best so far: +1.9740
+13968.3s 112 Trial  17 | LR=1.12e-04 | gamma=0.963 | LSTM=256 | sortino_w=0.71 | Sharpe=+1.7661
+13968.3s 113 [Trial  17/ 18] done             | Sharpe: +1.7661    | Best so far: +4.1119
+13968.3s 114 Trial  17 | LR=1.84e-04 | gamma=0.923 | LSTM=256 | sortino_w=0.88 | Sharpe=+1.0074
+13968.3s 115 [Trial  17/ 18] done             | Sharpe: +1.0074    | Best so far: +1.9740
+13968.3s 116 Trial  18 | LR=1.44e-04 | gamma=0.908 | LSTM=64 | sortino_w=0.38 | Sharpe=-0.5708
+13968.3s 117 [Trial  18/ 19] done             | Sharpe: -0.5708    | Best so far: +4.1119
+13968.3s 118 Trial  18 | LR=4.71e-04 | gamma=0.973 | LSTM=128 | sortino_w=0.64 | Sharpe=-1.5186
+13968.3s 119 [Trial  18/ 19] done             | Sharpe: -1.5186    | Best so far: +1.9740
+13968.3s 120 Trial  19 | LR=3.73e-04 | gamma=0.925 | LSTM=128 | sortino_w=0.53 | Sharpe=-4.6544
+13968.3s 121 [Trial  19/ 20] done             | Sharpe: -4.6544    | Best so far: +4.1119
+13968.3s 122 Trial  19 | LR=7.65e-05 | gamma=0.919 | LSTM=64 | sortino_w=0.47 | Sharpe=+1.7493
+13968.3s 123 [Trial  19/ 20] done             | Sharpe: +1.7493    | Best so far: +1.9740
+13968.3s 124 Trial  20 | LR=7.41e-05 | gamma=0.960 | LSTM=128 | sortino_w=0.69 | Sharpe=+3.7890
+13968.3s 125 [Trial  20/ 21] done             | Sharpe: +3.7890    | Best so far: +4.1119
+13968.3s 126 Trial  20 | LR=9.45e-04 | gamma=0.943 | LSTM=64 | sortino_w=0.56 | Sharpe=+1.7566
+13968.3s 127 [Trial  20/ 21] done             | Sharpe: +1.7566    | Best so far: +1.9740
+13968.3s 128 Trial  21 | LR=1.13e-04 | gamma=0.942 | LSTM=64 | sortino_w=0.63 | Sharpe=+1.8840
+13968.3s 129 [Trial  21/ 22] done             | Sharpe: +1.8840    | Best so far: +4.1119
+13968.3s 130 Trial  21 | LR=4.88e-04 | gamma=0.913 | LSTM=32 | sortino_w=0.43 | Sharpe=+1.8488
+13968.3s 131 [Trial  21/ 22] done             | Sharpe: +1.8488    | Best so far: +1.9740
+13968.3s 132 Trial  22 | LR=1.49e-04 | gamma=0.937 | LSTM=64 | sortino_w=0.78 | Sharpe=+3.1703
+13968.3s 133 [Trial  22/ 23] done             | Sharpe: +3.1703    | Best so far: +4.1119
+13968.3s 134 Trial  22 | LR=4.63e-04 | gamma=0.911 | LSTM=32 | sortino_w=0.37 | Sharpe=+0.3643
+13968.3s 135 [Trial  22/ 23] done             | Sharpe: +0.3643    | Best so far: +1.9740
+13968.3s 136 Trial  23 | LR=2.57e-04 | gamma=0.925 | LSTM=64 | sortino_w=0.55 | Sharpe=+3.0881
+13968.3s 137 [Trial  23/ 24] done             | Sharpe: +3.0881    | Best so far: +4.1119
+13968.3s 138 Trial  24 | LR=1.79e-05 | gamma=0.951 | LSTM=64 | sortino_w=0.67 | Sharpe=+3.7890
+13968.3s 139 [Trial  24/ 25] done             | Sharpe: +3.7890    | Best so far: +4.1119
+13968.3s 140 Trial  23 | LR=3.75e-04 | gamma=0.927 | LSTM=32 | sortino_w=0.39 | Sharpe=-0.1835
+13968.3s 141 [Trial  23/ 24] done             | Sharpe: -0.1835    | Best so far: +1.9740
+13968.3s 142 Trial  25 | LR=8.40e-05 | gamma=0.908 | LSTM=64 | sortino_w=0.65 | Sharpe=+3.7755
+13968.3s 143 [Trial  25/ 26] done             | Sharpe: +3.7755    | Best so far: +4.1119
+13968.3s 144 Trial  24 | LR=1.85e-04 | gamma=0.934 | LSTM=32 | sortino_w=0.67 | Sharpe=+1.7115
+13968.3s 145 [Trial  24/ 25] done             | Sharpe: +1.7115    | Best so far: +1.9740
+13968.3s 146 Trial  26 | LR=1.58e-04 | gamma=0.971 | LSTM=256 | sortino_w=0.76 | Sharpe=-2.0657
+13968.3s 147 [Trial  26/ 27] done             | Sharpe: -2.0657    | Best so far: +4.1119
+13968.3s 148 Trial  25 | LR=7.75e-04 | gamma=0.954 | LSTM=32 | sortino_w=0.46 | Sharpe=+0.7533
+13968.3s 149 [Trial  25/ 26] done             | Sharpe: +0.7533    | Best so far: +1.9740
+13968.3s 150 Trial  27 | LR=4.97e-04 | gamma=0.984 | LSTM=32 | sortino_w=0.57 | Sharpe=-4.8222
+13968.3s 151 [Trial  27/ 28] done             | Sharpe: -4.8222    | Best so far: +4.1119
+13968.3s 152 Trial  26 | LR=2.21e-05 | gamma=0.915 | LSTM=128 | sortino_w=0.55 | Sharpe=+1.7480
+13968.3s 153 [Trial  26/ 27] done             | Sharpe: +1.7480    | Best so far: +1.9740
+13968.3s 154 Trial  28 | LR=5.22e-05 | gamma=0.934 | LSTM=64 | sortino_w=0.83 | Sharpe=+3.7890
+13968.3s 155 [Trial  28/ 29] done             | Sharpe: +3.7890    | Best so far: +4.1119
+13968.3s 156 Trial  27 | LR=3.51e-04 | gamma=0.936 | LSTM=256 | sortino_w=0.77 | Sharpe=+1.7566
+13968.3s 157 [Trial  27/ 28] done             | Sharpe: +1.7566    | Best so far: +1.9740
+13968.3s 158 Trial  29 | LR=5.42e-05 | gamma=0.948 | LSTM=64 | sortino_w=0.48 | Sharpe=+4.2053
+13968.3s 159 [Trial  29/ 30] *** NEW BEST *** | Sharpe: +4.2053    | Best so far: +4.2053
+13968.3s 160 
+13968.3s 161 ======================================================================
+13968.3s 162 BEST TRIAL: #29
+13968.3s 163 BEST VALIDATION SHARPE: +4.2053
+13968.3s 164 ======================================================================
+13968.3s 165 
+13968.3s 166 Best Hyperparameters:
+13968.3s 167 learning_rate          5.4244570465970006e-05  (was: 5.2699e-05)
+13968.3s 168 n_steps                2048                  (was: 2048)
+13968.3s 169 batch_size             64                    (was: 64)
+13968.3s 170 n_epochs               10                    (was: 10)
+13968.3s 171 gamma                  0.9475614686899978    (was: 0.9503)
+13968.3s 172 gae_lambda             0.9978270178754787    (was: 0.9196)
+13968.3s 173 clip_range             0.2057450648853394    (was: 0.2)
+13968.3s 174 ent_coef               1.4882012535332124e-05  (was: 1.5726e-05)
+13968.3s 175 vf_coef                0.521014529689065     (was: 0.5299)
+13968.3s 176 lstm_hidden_size       64                    (was: 64)
+13968.3s 177 mlp_hidden_size        128                   (was: 256)
+13968.3s 178 dropout_rate           0.032182168293675206  (was: 0.1)
+13968.3s 179 sortino_weight         0.4775737964256797    (was: 0.6)
+13968.3s 180 
+13968.3s 181 [Save]   Best params saved to /kaggle/working/my_project/results/optuna_best_params_bull.json
+13968.3s 182 --> Copy these into config.py before running phase3_train.py!
+13968.3s 183 [Plot] Optimization history saved to /kaggle/working/my_project/results/optuna_history_bull.png
+13968.3s 184 
+13968.3s 185 PHASE 6 COMPLETE
+13968.3s 186 Trial  28 | LR=1.09e-04 | gamma=0.984 | LSTM=64 | sortino_w=0.36 | Sharpe=+1.4595
+13968.3s 187 [Trial  28/ 29] done             | Sharpe: +1.4595    | Best so far: +1.9740
+13968.3s 188 Trial  29 | LR=4.91e-05 | gamma=0.948 | LSTM=128 | sortino_w=0.57 | Sharpe=-0.9756
+13968.3s 189 [Trial  29/ 30] done             | Sharpe: -0.9756    | Best so far: +1.9740
+13968.3s 190 
+13968.3s 191 ======================================================================
+13968.3s 192 BEST TRIAL: #6
+13968.3s 193 BEST VALIDATION SHARPE: +1.9740
+13968.3s 194 ======================================================================
+13968.3s 195 
+13968.3s 196 Best Hyperparameters:
+13968.3s 197 learning_rate          0.00041198396246051877  (was: 5.2699e-05)
+13968.3s 198 n_steps                512                   (was: 2048)
+13968.3s 199 batch_size             128                   (was: 64)
+13968.3s 200 n_epochs               9                     (was: 10)
+13968.3s 201 gamma                  0.9413236893117292    (was: 0.9503)
+13968.3s 202 gae_lambda             0.9219886732366023    (was: 0.9196)
+13968.3s 203 clip_range             0.13595961020010486   (was: 0.2)
+13968.3s 204 ent_coef               2.2410971619109514e-05  (was: 1.5726e-05)
+13968.3s 205 vf_coef                0.8657458223475116    (was: 0.5299)
+13968.3s 206 lstm_hidden_size       128                   (was: 64)
+13968.3s 207 mlp_hidden_size        128                   (was: 256)
+13968.3s 208 dropout_rate           0.14917455176771563   (was: 0.1)
+13968.3s 209 sortino_weight         0.4805269858900618    (was: 0.6)
+13968.3s 210 
+13968.3s 211 [Save]   Best params saved to /kaggle/working/my_project/results/optuna_best_params_bear.json
+13968.3s 212 --> Copy these into config.py before running phase3_train.py!
+13968.3s 213 [Plot] Optimization history saved to /kaggle/working/my_project/results/optuna_history_bear.png
+13968.3s 214 
+13968.3s 215 PHASE 6 COMPLETE
+13968.3s 216 Optimization Complete for BOTH regimes! Check the results folder!
+13968.3s 217 2026-06-24 13:16:54.451391: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+13968.3s 218 2026-06-24 13:16:54.451391: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+13968.3s 219 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+13968.3s 220 E0000 00:00:1782307014.674193      61 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+13968.3s 221 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+13968.3s 222 E0000 00:00:1782307014.674217      60 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+13968.3s 223 E0000 00:00:1782307014.739433      60 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+13968.3s 224 E0000 00:00:1782307014.739454      61 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+13968.3s 225 W0000 00:00:1782307015.210286      60 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 226 W0000 00:00:1782307015.210332      60 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 227 W0000 00:00:1782307015.210336      60 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 228 W0000 00:00:1782307015.210338      60 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 229 W0000 00:00:1782307015.210292      61 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 230 W0000 00:00:1782307015.210349      61 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 231 W0000 00:00:1782307015.210355      61 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 232 W0000 00:00:1782307015.210360      61 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 233 Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+13968.3s 234 Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+13968.3s 235 Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+13968.3s 236 See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+13968.3s 237 Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+13968.3s 238 Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+13968.3s 239 Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+13968.3s 240 See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+13968.3s 241 
+13968.3s 242 2026-06-24 13:16:54.451391: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+13968.3s 243 2026-06-24 13:16:54.451391: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+13968.3s 244 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+13968.3s 245 E0000 00:00:1782307014.674193      61 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+13968.3s 246 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+13968.3s 247 E0000 00:00:1782307014.674217      60 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+13968.3s 248 E0000 00:00:1782307014.739433      60 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+13968.3s 249 E0000 00:00:1782307014.739454      61 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+13968.3s 250 W0000 00:00:1782307015.210286      60 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 251 W0000 00:00:1782307015.210332      60 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 252 W0000 00:00:1782307015.210336      60 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 253 W0000 00:00:1782307015.210338      60 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 254 W0000 00:00:1782307015.210292      61 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 255 W0000 00:00:1782307015.210349      61 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 256 W0000 00:00:1782307015.210355      61 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 257 W0000 00:00:1782307015.210360      61 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+13968.3s 258 Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+13968.3s 259 Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+13968.3s 260 Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+13968.3s 261 See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+13968.3s 262 Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+13968.3s 263 Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+13968.3s 264 Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+13968.3s 265 See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+13969.7s 266 Traceback (most recent call last):
+13969.7s 267 File "<string>", line 1, in <module>
+13969.7s 268 File "/usr/local/lib/python3.12/dist-packages/papermill/execute.py", line 131, in execute_notebook
+13969.7s 269 raise_for_execution_errors(nb, output_path)
+13969.7s 270 File "/usr/local/lib/python3.12/dist-packages/papermill/execute.py", line 251, in raise_for_execution_errors
+13969.7s 271 raise error
+13969.7s 272 papermill.exceptions.PapermillExecutionError:
+13969.7s 273 ---------------------------------------------------------------------------
+13969.7s 274 Exception encountered at "In [3]":
+13969.7s 275 ---------------------------------------------------------------------------
+13969.7s 276 KeyError                                  Traceback (most recent call last)
+13969.7s 277 /tmp/ipykernel_23/2901255305.py in <cell line: 0>()
+13969.7s 278 2
+13969.7s 279 3 # Connect to the live database that the GPUs are currently writing to
+13969.7s 280 ----> 4 study = optuna.load_study(
+13969.7s 281 5     study_name="clstm_ppo_crab", # Since you didn't specify, it defaulted to the 'crab' regime
+13969.7s 282 6     storage="sqlite:////kaggle/working/my_project/results/optuna_study_crab.db"
+13969.7s 283 
+13969.7s 284 /usr/local/lib/python3.12/dist-packages/optuna/_convert_positional_args.py in converter_wrapper(*args, **kwargs)
+13969.7s 285 125             kwargs.update(inferred_kwargs)
+13969.7s 286 126
+13969.7s 287 --> 127             return func(**kwargs)  # type: ignore[call-arg]
+13969.7s 288 128
+13969.7s 289 129         return converter_wrapper
+13969.7s 290 
+13969.7s 291 /usr/local/lib/python3.12/dist-packages/optuna/study/study.py in load_study(study_name, storage, sampler, pruner)
+13969.7s 292 1401         )
+13969.7s 293 1402
+13969.7s 294 -> 1403     study = Study(study_name=study_name, storage=storage, sampler=sampler, pruner=pruner)
+13969.7s 295 1404     if sampler is None and len(study.directions) > 1:
+13969.7s 296 1405         study.sampler = samplers.NSGAIISampler()
+13969.7s 297 
+13969.7s 298 /usr/local/lib/python3.12/dist-packages/optuna/study/study.py in __init__(self, study_name, storage, sampler, pruner)
+13969.7s 299 86         self.study_name = study_name
+13969.7s 300 87         storage = storages.get_storage(storage)
+13969.7s 301 ---> 88         study_id = storage.get_study_id_from_name(study_name)
+13969.7s 302 89         self._study_id = study_id
+13969.7s 303 90         self._storage = storage
+13969.7s 304 
+13969.7s 305 /usr/local/lib/python3.12/dist-packages/optuna/storages/_cached_storage.py in get_study_id_from_name(self, study_name)
+13969.7s 306 107
+13969.7s 307 108     def get_study_id_from_name(self, study_name: str) -> int:
+13969.7s 308 --> 109         return self._backend.get_study_id_from_name(study_name)
+13969.7s 309 110
+13969.7s 310 111     def get_study_name_from_id(self, study_id: int) -> str:
+13969.7s 311 
+13969.7s 312 /usr/local/lib/python3.12/dist-packages/optuna/storages/_rdb/storage.py in get_study_id_from_name(self, study_name)
+13969.7s 313 339     def get_study_id_from_name(self, study_name: str) -> int:
+13969.7s 314 340         with _create_scoped_session(self.scoped_session) as session:
+13969.7s 315 --> 341             study = models.StudyModel.find_or_raise_by_name(study_name, session)
+13969.7s 316 342             study_id = study.study_id
+13969.7s 317 343
+13969.7s 318 
+13969.7s 319 /usr/local/lib/python3.12/dist-packages/optuna/storages/_rdb/models.py in find_or_raise_by_name(cls, study_name, session)
+13969.7s 320 84         study = cls.find_by_name(study_name, session)
+13969.7s 321 85         if study is None:
+13969.7s 322 ---> 86             raise KeyError(NOT_FOUND_MSG)
+13969.7s 323 87
+13969.7s 324 88         return study
+13969.7s 325 
+13969.7s 326 KeyError: 'Record does not exist.'
+13969.7s 327 
+13971.9s 328 /usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\|'
+13971.9s 329 cells[i][c] = re.sub('\\\\\|', '|', cell)
+13972.1s 330 /usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\_'
+13972.1s 331 text = re.sub(r'_', '\_', text) # Escape underscores in display text
+13972.7s 332 [NbConvertApp] Converting notebook __notebook__.ipynb to notebook
+13973.0s 333 [NbConvertApp] Writing 36990 bytes to __notebook__.ipynb
+13975.3s 334 [NbConvertApp] Converting notebook __notebook__.ipynb to html
+13976.0s 335 [NbConvertApp] Writing 311259 bytes to __results__.html

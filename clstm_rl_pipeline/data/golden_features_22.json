@@ -1,0 +1,19 @@
+[
+  "1h_atr_pct",
+  "1d_ad_zscore",
+  "1d_sma200_dist",
+  "4h_vol_log",
+  "4h_sar_dist",
+  "1d_log_return",
+  "4h_macd_hist",
+  "4h_kc_width",
+  "4h_adx",
+  "4h_dc_width",
+  "1d_bb_width",
+  "1d_dc_width",
+  "1d_macd_signal",
+  "4h_high_low_pct",
+  "4h_return_5",
+  "1d_adx",
+  "1d_ema12_dist"
+]

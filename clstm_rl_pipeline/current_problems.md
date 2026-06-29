@@ -1,0 +1,4 @@
+- The model is more viased towards short and remains for very long period on that state and switches to long rarely and for very short period of time.
+- If we add take profits and stop loss, we do not stop the model from opening new trades and closing existing trades in the same candle. I even tried cooldown periods but as mentioned earlier the very long period of short trades it is not very effective too.
+- When I tried an ensemble model of long, short and crab trained seperately the model was not very effective.
+- 

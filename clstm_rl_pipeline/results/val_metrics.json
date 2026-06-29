@@ -1,0 +1,19 @@
+{
+  "total_return": 0.18054979352585665,
+  "sharpe_ratio": 1.4631563451798522,
+  "max_drawdown": 0.15928219811992286,
+  "win_rate": 0.49730402322687683,
+  "loss_rate": 0.5022812111157197,
+  "avg_win": 0.0029476663709348885,
+  "avg_loss": -0.0027536584314557053,
+  "max_win": 0.08970416008882064,
+  "max_loss": -0.046295505297873615,
+  "sortino_ratio": 1.898079946048683,
+  "final_portfolio": 118054.97935258567,
+  "buy_and_hold_return": -0.1772525648199963,
+  "total_trades": 84,
+  "total_fees": 4196.724869419886,
+  "total_slippage": 2098.362434709943,
+  "sl_triggers": 0,
+  "tp_triggers": 0
+}

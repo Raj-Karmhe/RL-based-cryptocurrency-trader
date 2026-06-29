@@ -1,0 +1,15 @@
+{
+  "learning_rate": 0.00018071925473068127,
+  "n_steps": 4096,
+  "batch_size": 32,
+  "n_epochs": 4,
+  "gamma": 0.9616114942222456,
+  "gae_lambda": 0.9323485990372317,
+  "clip_range": 0.2421793996577347,
+  "ent_coef": 0.0001478617721382451,
+  "vf_coef": 0.8253465846078514,
+  "lstm_hidden_size": 128,
+  "mlp_hidden_size": 256,
+  "dropout_rate": 0.11416182282775508,
+  "sortino_weight": 0.5279164429525252
+}
