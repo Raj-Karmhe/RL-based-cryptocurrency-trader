@@ -373,37 +373,74 @@ class PairsTradingEnv(gym.Env):
                 self.risk_manager.on_entry(current_spread, current_zscore, ptype)
 
             else:
-                # Position adjustment (partial close/open)
-                # For simplicity, close and reopen at new size
-                # Close existing
-                if self.entry_price_a is not None:
-                    if self.position > 0:
-                        pnl_a = self.units_a * (current_price_a - self.entry_price_a)
-                        pnl_b = self.units_b * (self.entry_price_b - current_price_b)
+                # Position adjustment (partial close/open/reversal)
+                is_reversal = (self.position > 0 and target_position < 0) or (self.position < 0 and target_position > 0)
+                
+                if is_reversal:
+                    # Full close and reopen
+                    if self.entry_price_a is not None:
+                        if self.position > 0:
+                            pnl_a = self.units_a * (current_price_a - self.entry_price_a)
+                            pnl_b = self.units_b * (self.entry_price_b - current_price_b)
+                        else:
+                            pnl_a = self.units_a * (self.entry_price_a - current_price_a)
+                            pnl_b = self.units_b * (current_price_b - self.entry_price_b)
+                        self.balance += self.notional_per_leg * 2 + pnl_a + pnl_b
+                        self.risk_manager.on_exit()
+                        
+                    new_notional = abs(target_position) * self.portfolio_value * config.MAX_POSITION_FRACTION / 2.0
+                    new_notional = min(new_notional, (self.balance - trade_cost) / 2.0)
+                    new_notional = max(0.0, new_notional)
+                    
+                    self.notional_per_leg = new_notional
+                    self.units_a = new_notional / current_price_a
+                    self.units_b = new_notional / current_price_b
+                    self.entry_price_a = current_price_a
+                    self.entry_price_b = current_price_b
+                    self.entry_spread_value = current_spread
+                    self.balance -= (new_notional * 2 + trade_cost)
+                    
+                    ptype = 1 if target_position > 0 else -1
+                    self.risk_manager.on_entry(current_spread, current_zscore, ptype)
+                    
+                else:
+                    # Scaling in same direction
+                    is_scaling_down = abs(target_position) < abs(self.position)
+                    
+                    if is_scaling_down:
+                        # Realize partial PNL
+                        fraction_closed = abs(position_change) / abs(self.position)
+                        if self.position > 0:
+                            pnl_a = (self.units_a * fraction_closed) * (current_price_a - self.entry_price_a)
+                            pnl_b = (self.units_b * fraction_closed) * (self.entry_price_b - current_price_b)
+                        else:
+                            pnl_a = (self.units_a * fraction_closed) * (self.entry_price_a - current_price_a)
+                            pnl_b = (self.units_b * fraction_closed) * (current_price_b - self.entry_price_b)
+                        
+                        margin_freed = self.notional_per_leg * fraction_closed
+                        self.balance += (margin_freed * 2 + pnl_a + pnl_b - trade_cost)
+                        
+                        self.notional_per_leg -= margin_freed
+                        self.units_a *= (1.0 - fraction_closed)
+                        self.units_b *= (1.0 - fraction_closed)
+                        
                     else:
-                        pnl_a = self.units_a * (self.entry_price_a - current_price_a)
-                        pnl_b = self.units_b * (current_price_b - self.entry_price_b)
-                    total_pnl = pnl_a + pnl_b
-                    self.balance += self.notional_per_leg * 2 + total_pnl
-                    self.risk_manager.on_exit()
-
-                # Reopen at new size
-                new_notional = abs(target_position) * self.portfolio_value * \
-                    config.MAX_POSITION_FRACTION / 2.0
-                new_notional = min(new_notional, (self.balance - trade_cost) / 2.0)
-                new_notional = max(0.0, new_notional)
-
-                self.notional_per_leg = new_notional
-                self.units_a = new_notional / current_price_a
-                self.units_b = new_notional / current_price_b
-                self.entry_price_a = current_price_a
-                self.entry_price_b = current_price_b
-                self.entry_spread_value = current_spread
-                self.balance -= (new_notional * 2 + trade_cost)
-                self.balance = max(0.0, self.balance)
-
-                ptype = 1 if target_position > 0 else -1
-                self.risk_manager.on_entry(current_spread, current_zscore, ptype)
+                        # Scaling up (VWAP entry)
+                        add_notional = min(trade_value_per_leg, (self.balance - trade_cost) / 2.0)
+                        add_notional = max(0.0, add_notional)
+                        
+                        add_units_a = add_notional / current_price_a
+                        add_units_b = add_notional / current_price_b
+                        
+                        if self.units_a + add_units_a > 0:
+                            self.entry_price_a = ((self.entry_price_a * self.units_a) + (current_price_a * add_units_a)) / (self.units_a + add_units_a)
+                        if self.units_b + add_units_b > 0:
+                            self.entry_price_b = ((self.entry_price_b * self.units_b) + (current_price_b * add_units_b)) / (self.units_b + add_units_b)
+                        
+                        self.units_a += add_units_a
+                        self.units_b += add_units_b
+                        self.notional_per_leg += add_notional
+                        self.balance -= (add_notional * 2 + trade_cost)
 
             self.total_trades += 1
             self.trade_log.append({
