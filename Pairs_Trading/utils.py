@@ -226,8 +226,9 @@ def compute_spread_baseline(df, initial_balance=config.INITIAL_BALANCE):
     
     # Start loop exactly at the warmup threshold to temporally align with the RL agent
     for i in range(config.TIME_WINDOW, len(close_a)):
-        cdf = cdfs[i]
-        hr = abs(hedge_ratios[i])
+        # Shift evaluation to i-1 to prevent look-ahead bias (execute at i based on i-1 signal)
+        cdf = cdfs[i - 1]
+        hr = abs(hedge_ratios[i - 1])
 
         # Entry signals
         if position == 0:
@@ -261,18 +262,20 @@ def compute_spread_baseline(df, initial_balance=config.INITIAL_BALANCE):
                 entry_notional_b = notional_b
 
         # Exit signals
-        elif (0.4 < cdf < 0.6) or (abs(zscores[i]) > config.ZSCORE_STOP_LOSS):
-            if position == 1:
-                pnl = (units_a * (close_a[i] - entry_price_a) +
-                       units_b * (entry_price_b - close_b[i]))
-            else:
-                pnl = (units_a * (entry_price_a - close_a[i]) +
-                       units_b * (close_b[i] - entry_price_b))
-            fee = (entry_notional_a + entry_notional_b) * (config.TRANSACTION_FEE + getattr(config, 'SLIPPAGE_BASE', 0.0001))
-            balance += (entry_notional_a + entry_notional_b) + pnl - fee
-            position = 0
-            units_a = units_b = 0.0
-            entry_notional_a = entry_notional_b = 0.0
+        elif position != 0:
+            # Take profit near mean, or Stop Loss on statistical breakdown
+            if (0.4 < cdf < 0.6) or (abs(zscores[i - 1]) > config.ZSCORE_STOP_LOSS):
+                if position == 1:
+                    pnl = (units_a * (close_a[i] - entry_price_a) +
+                           units_b * (entry_price_b - close_b[i]))
+                else:
+                    pnl = (units_a * (entry_price_a - close_a[i]) +
+                           units_b * (close_b[i] - entry_price_b))
+                fee = (entry_notional_a + entry_notional_b) * (config.TRANSACTION_FEE + getattr(config, 'SLIPPAGE_BASE', 0.0001))
+                balance += (entry_notional_a + entry_notional_b) + pnl - fee
+                position = 0
+                units_a = units_b = 0.0
+                entry_notional_a = entry_notional_b = 0.0
 
         # Mark to market and funding
         if position != 0:

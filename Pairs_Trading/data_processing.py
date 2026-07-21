@@ -160,13 +160,13 @@ def add_multi_tf_features(df_merged: pd.DataFrame) -> pd.DataFrame:
     
     # Reindex back to 1h
     df_tf = pd.DataFrame(index=df_merged.index)
-    df_tf['Hedge_Ratio_4h'] = hr_4h.reindex(df_tf.index).ffill()
-    df_tf['Spread_ZScore_4h'] = z_4h.reindex(df_tf.index).ffill()
-    df_tf['Cointegration_P_Value_4h'] = pval_4h.reindex(df_tf.index).ffill()
+    df_tf['Hedge_Ratio_4h'] = hr_4h.shift(1).reindex(df_tf.index).ffill()
+    df_tf['Spread_ZScore_4h'] = z_4h.shift(1).reindex(df_tf.index).ffill()
+    df_tf['Cointegration_P_Value_4h'] = pval_4h.shift(1).reindex(df_tf.index).ffill()
     
-    df_tf['Hedge_Ratio_1d'] = hr_1d.reindex(df_tf.index).ffill()
-    df_tf['Spread_ZScore_1d'] = z_1d.reindex(df_tf.index).ffill()
-    df_tf['Cointegration_P_Value_1d'] = pval_1d.reindex(df_tf.index).ffill()
+    df_tf['Hedge_Ratio_1d'] = hr_1d.shift(1).reindex(df_tf.index).ffill()
+    df_tf['Spread_ZScore_1d'] = z_1d.shift(1).reindex(df_tf.index).ffill()
+    df_tf['Cointegration_P_Value_1d'] = pval_1d.shift(1).reindex(df_tf.index).ffill()
     
     return df_tf
 

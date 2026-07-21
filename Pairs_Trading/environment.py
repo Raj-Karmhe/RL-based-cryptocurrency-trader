@@ -236,8 +236,9 @@ class PairsTradingEnv(gym.Env):
 
         self.risk_manager.reset()
 
-        # Fill observation buffer (includes current step data so it is strictly aligned with execution)
-        self._obs_buffer = self.features[self.current_step - self.time_window + 1 : self.current_step + 1].copy()
+        # Fill observation buffer (shift backwards by 1 to eliminate look-ahead bias)
+        # Agent decides at T using features up to T-1, trades execute at T.
+        self._obs_buffer = self.features[self.current_step - self.time_window : self.current_step].copy()
 
         return self._get_obs(), {}
 
@@ -561,9 +562,9 @@ class PairsTradingEnv(gym.Env):
             self.portfolio_value = max(0.0, min(raw_pv, self.initial_balance * 1000))
             self.peak_value = max(self.peak_value, self.portfolio_value)
 
-            # Slide observation buffer
+            # Slide observation buffer (append the features of the candle that just closed)
             self._obs_buffer = np.roll(self._obs_buffer, -1, axis=0)
-            self._obs_buffer[-1] = self.features[self.current_step]
+            self._obs_buffer[-1] = self.features[self.current_step - 1]
 
         # ── 6. Compute reward ─────────────────────────────────────────────
         reward = self._compute_reward(trade_cost, position_change, current_zscore, reward_step)
@@ -602,8 +603,8 @@ class PairsTradingEnv(gym.Env):
         portfolio_state = np.array([
             self.position,
             unrealized_pnl_frac,
-            self.zscores[step],
-            self.hedge_ratios[step],
+            self.zscores[max(0, step - 1)],
+            self.hedge_ratios[max(0, step - 1)],
         ], dtype=np.float32)
 
         obs = np.concatenate([self._obs_buffer.flatten(), portfolio_state])
