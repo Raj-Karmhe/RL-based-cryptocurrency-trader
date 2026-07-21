@@ -166,9 +166,9 @@ def compute_metrics(portfolio_values, timeframe='1h', initial_balance=100_000):
         if len(down_rets) > 0 else float('inf')
 
     # Calmar ratio (annualized return / max drawdown)
-    n_hours = len(pv)
-    ann_return = (pv[-1] / pv[0]) ** (8760 / max(n_hours, 1)) - 1 \
-        if timeframe == '1h' else (pv[-1] / pv[0]) ** (365 / max(n_hours, 1)) - 1
+    n_periods = max(len(pv) - 1, 1)  # Number of return periods, not data points
+    ann_return = (pv[-1] / pv[0]) ** (8760 / n_periods) - 1 \
+        if timeframe == '1h' else (pv[-1] / pv[0]) ** (365 / n_periods) - 1
     calmar = ann_return / (max_drawdown + 1e-8)
 
     return {
@@ -196,16 +196,17 @@ def compute_spread_baseline(df, initial_balance=config.INITIAL_BALANCE):
     close_a = df['Close_A'].values
     close_b = df['Close_B'].values
     
+    spread_series = pd.Series(df['Spread'].values)
+    spread_mean = spread_series.rolling(config.SPREAD_ZSCORE_WINDOW).mean()
+    spread_std = spread_series.rolling(config.SPREAD_ZSCORE_WINDOW).std()
+    zscores = ((spread_series - spread_mean) / (spread_std + 1e-10)).fillna(0).values
+
     # Use CDF instead of Z-scores if available
     if 'Spread_CDF_KDE' in df.columns:
         cdfs = df['Spread_CDF_KDE'].values
     else:
         # Fallback to Z-score mapped to CDF proxy using normal CDF
         from scipy.stats import norm
-        spread_series = pd.Series(df['Spread'].values)
-        spread_mean = spread_series.rolling(config.SPREAD_ZSCORE_WINDOW).mean()
-        spread_std = spread_series.rolling(config.SPREAD_ZSCORE_WINDOW).std()
-        zscores = ((spread_series - spread_mean) / (spread_std + 1e-10)).fillna(0).values
         cdfs = norm.cdf(zscores)
 
     funding_a = df['Funding_Rate_A'].values if 'Funding_Rate_A' in df.columns else np.zeros(len(close_a))
@@ -221,61 +222,76 @@ def compute_spread_baseline(df, initial_balance=config.INITIAL_BALANCE):
 
     portfolio_values = [initial_balance]
 
-    for i in range(1, len(close_a)):
+    hedge_ratios = df['Hedge_Ratio'].values if 'Hedge_Ratio' in df.columns else np.ones(len(close_a))
+    
+    # Start loop exactly at the warmup threshold to temporally align with the RL agent
+    for i in range(config.TIME_WINDOW, len(close_a)):
         cdf = cdfs[i]
+        hr = abs(hedge_ratios[i])
 
         # Entry signals
         if position == 0:
             if cdf < 0.05:  # Spread too low → long spread
                 position = 1
-                notional = balance * 0.4
-                units_a = notional / close_a[i]
-                units_b = notional / close_b[i]
+                target_total = balance * config.MAX_POSITION_FRACTION * 2.0
+                notional_a = target_total / (1.0 + hr)
+                notional_b = target_total * hr / (1.0 + hr)
+                
+                fee = (notional_a + notional_b) * (config.TRANSACTION_FEE + getattr(config, 'SLIPPAGE_BASE', 0.0001))
+                balance -= (notional_a + notional_b + fee)
                 entry_price_a = close_a[i]
                 entry_price_b = close_b[i]
-                fee = notional * 2 * (config.TRANSACTION_FEE + config.SLIPPAGE)
-                balance -= (notional * 2 + fee)
-            elif cdf > 0.95:  # Spread too high → short spread
+                units_a = notional_a / entry_price_a
+                units_b = notional_b / entry_price_b
+                entry_notional_a = notional_a
+                entry_notional_b = notional_b
+            elif cdf > 0.95: # Spread too high -> short spread
                 position = -1
-                notional = balance * 0.4
-                units_a = notional / close_a[i]
-                units_b = notional / close_b[i]
+                target_total = balance * config.MAX_POSITION_FRACTION * 2.0
+                notional_a = target_total / (1.0 + hr)
+                notional_b = target_total * hr / (1.0 + hr)
+                
+                fee = (notional_a + notional_b) * (config.TRANSACTION_FEE + getattr(config, 'SLIPPAGE_BASE', 0.0001))
+                balance -= (notional_a + notional_b + fee)
                 entry_price_a = close_a[i]
                 entry_price_b = close_b[i]
-                fee = notional * 2 * (config.TRANSACTION_FEE + config.SLIPPAGE)
-                balance -= (notional * 2 + fee)
+                units_a = notional_a / entry_price_a
+                units_b = notional_b / entry_price_b
+                entry_notional_a = notional_a
+                entry_notional_b = notional_b
 
         # Exit signals
-        elif 0.4 < cdf < 0.6:
+        elif (0.4 < cdf < 0.6) or (abs(zscores[i]) > config.ZSCORE_STOP_LOSS):
             if position == 1:
                 pnl = (units_a * (close_a[i] - entry_price_a) +
                        units_b * (entry_price_b - close_b[i]))
             else:
                 pnl = (units_a * (entry_price_a - close_a[i]) +
                        units_b * (close_b[i] - entry_price_b))
-            fee = notional * 2 * (config.TRANSACTION_FEE + config.SLIPPAGE)
-            balance += notional * 2 + pnl - fee
+            fee = (entry_notional_a + entry_notional_b) * (config.TRANSACTION_FEE + getattr(config, 'SLIPPAGE_BASE', 0.0001))
+            balance += (entry_notional_a + entry_notional_b) + pnl - fee
             position = 0
             units_a = units_b = 0.0
+            entry_notional_a = entry_notional_b = 0.0
 
         # Mark to market and funding
         if position != 0:
             hourly_fund_a = funding_a[i] / 8.0
             hourly_fund_b = funding_b[i] / 8.0
-            notional_a = units_a * close_a[i]
-            notional_b = units_b * close_b[i]
+            current_notional_a = units_a * close_a[i]
+            current_notional_b = units_b * close_b[i]
 
             if position == 1:
                 pnl = (units_a * (close_a[i] - entry_price_a) +
                        units_b * (entry_price_b - close_b[i]))
-                funding_cost = (notional_a * hourly_fund_a) + (notional_b * -hourly_fund_b)
+                funding_cost = (current_notional_a * hourly_fund_a) + (current_notional_b * -hourly_fund_b)
             else:
                 pnl = (units_a * (entry_price_a - close_a[i]) +
                        units_b * (close_b[i] - entry_price_b))
-                funding_cost = (notional_a * -hourly_fund_a) + (notional_b * hourly_fund_b)
+                funding_cost = (current_notional_a * -hourly_fund_a) + (current_notional_b * hourly_fund_b)
             
             balance -= funding_cost
-            pv = balance + notional * 2 + pnl
+            pv = balance + entry_notional_a + entry_notional_b + pnl
         else:
             pv = balance
 

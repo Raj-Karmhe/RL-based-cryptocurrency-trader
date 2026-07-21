@@ -32,6 +32,10 @@ def fetch_daily_data(exchange, symbol, days):
             print(f"Error fetching {symbol}: {e}")
             break
             
+    if not all_ohlcv:
+        print(f"Warning: No data fetched for {symbol}.")
+        return None
+        
     df = pd.DataFrame(all_ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     df['Date'] = pd.to_datetime(df['timestamp'], unit='ms')
     df.set_index('Date', inplace=True)
@@ -44,8 +48,12 @@ def main():
     series_list = []
     for symbol in SYMBOLS:
         series = fetch_daily_data(exchange, symbol, DAYS)
-        series_list.append(series)
-        
+        if series is not None:
+            series_list.append(series)
+            
+    if not series_list:
+        print("Error: No data could be fetched for any symbols.")
+        return
     # Merge into a single DataFrame
     df_merged = pd.concat(series_list, axis=1, join='inner').dropna()
     print(f"\nSuccessfully downloaded {len(df_merged)} days of aligned data.\n")

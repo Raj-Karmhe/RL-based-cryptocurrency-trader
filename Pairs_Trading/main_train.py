@@ -5,7 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 
 # ==============================================================================
 # MAIN TRAINING SCRIPT — PAIRS TRADING RL AGENT
@@ -36,28 +36,32 @@ def train_and_validate():
     print("=" * 70)
     df_a, df_b, df_merged = download_and_align_pair()
 
-    # ── Step 2: Cointegration Validation ──────────────────────────────────
+    # ── Step 2: Data Processing ───────────────────────────────────────────
     print("\n" + "=" * 70)
-    print("  STEP 2: COINTEGRATION VALIDATION")
+    print("  STEP 2: DATA PROCESSING & FEATURE ENGINEERING")
     print("=" * 70)
-    validation = run_full_validation(df_a['Close'], df_b['Close'])
+    # Pass already-downloaded data to avoid a redundant second API call
+    train_s, val_s, test_s, train_r, val_r, test_r = process_and_split_data(
+        df_a=df_a, df_b=df_b, df_merged=df_merged
+    )
+
+    # ── Step 3: Cointegration Validation (On Train Set Only) ──────────────
+    print("\n" + "=" * 70)
+    print("  STEP 3: COINTEGRATION VALIDATION")
+    print("=" * 70)
+    validation = run_full_validation(train_r['Close_A'], train_r['Close_B'])
 
     if not validation['overall_pass']:
         print("\n  [!] WARNING: Cointegration tests did not all pass.")
         print("  The strategy may have reduced effectiveness.")
         print("  Proceeding with training anyway...\n")
 
-    # ── Step 3: Data Processing ───────────────────────────────────────────
-    print("\n" + "=" * 70)
-    print("  STEP 3: DATA PROCESSING & FEATURE ENGINEERING")
-    print("=" * 70)
-    train_s, val_s, test_s, train_r, val_r, test_r = process_and_split_data()
-
     # ── Step 4: Build Training Environment ────────────────────────────────
     print("\n" + "=" * 70)
     print("  STEP 4: CLSTM-PPO TRAINING")
     print("=" * 70)
     # Spin up 8 parallel environments to feed the GPU 8x faster
+    # Using SubprocVecEnv for actual parallel execution across CPU cores
     train_env = SubprocVecEnv([make_env(train_s, config.FEATURE_COLUMNS) for _ in range(8)])
 
     # ── Step 5: Create or Load Model ──────────────────────────────────────
@@ -119,8 +123,7 @@ def train_and_validate():
 
     # ── Step 6: Validation Evaluation ─────────────────────────────────────
     print("\n" + "=" * 70)
-    print("  STEP 5: VALIDATION EVALUATION")
-    print("=" * 70)
+    print("  STEP 6: VALIDATION EVALUATION")
     print("INFO: Running agent on validation data...")
     val_results = run_agent(model, val_s, val_r, config.FEATURE_COLUMNS)
     vm = val_results['metrics']
@@ -130,9 +133,9 @@ def train_and_validate():
     baseline_pv = compute_spread_baseline(val_r)
     baseline_metrics = compute_metrics(baseline_pv, config.TIMEFRAME)
 
-    print(f"\n{'─'*75}")
+    print(f"\n{'-'*75}")
     print(f"  {'Metric':<35} {'CLSTM-PPO':>15} {'CDF Baseline':>18}")
-    print(f"{'─'*75}")
+    print(f"{'-'*75}")
     print(f"  {'Total Return (%)':<35} {vm['total_return']*100:>15.2f} "
           f"{baseline_metrics['total_return']*100:>18.2f}")
     print(f"  {'Max Drawdown (%)':<35} {vm['max_drawdown']*100:>15.2f} "
@@ -146,7 +149,7 @@ def train_and_validate():
     print(f"  {'Stop-Loss Exits':<35} {val_results['sl_triggers']:>15}")
     print(f"  {'Take-Profit Exits':<35} {val_results['tp_triggers']:>15}")
     print(f"  {'Timeout Exits':<35} {val_results['timeout_exits']:>15}")
-    print(f"{'─'*75}")
+    print(f"{'-'*75}")
 
     # ── Step 7: Save Validation Chart ─────────────────────────────────────
     print("\nINFO: Generating validation charts...")
@@ -160,7 +163,9 @@ def _save_quick_chart(results, baseline_pv, df_raw, label):
     dates = pd.DatetimeIndex(results['dates'])
     pv = results['portfolio_values']
     pos = results['positions']
-    min_len = min(len(dates), len(pv), len(pos), len(baseline_pv))
+    # Don't let baseline length limit the agent chart
+    min_len = min(len(dates), len(pv), len(pos))
+    baseline_len = min(len(baseline_pv), min_len)
 
     fig, axes = plt.subplots(2, 1, figsize=(14, 8),
                               gridspec_kw={'height_ratios': [3, 1]})
@@ -168,7 +173,7 @@ def _save_quick_chart(results, baseline_pv, df_raw, label):
     # Portfolio comparison
     axes[0].plot(dates[:min_len], pv[:min_len],
                  color='#2196F3', linewidth=1.5, label='CLSTM-PPO Agent')
-    axes[0].plot(dates[:min_len], baseline_pv[:min_len],
+    axes[0].plot(dates[:baseline_len], baseline_pv[:baseline_len],
                  color='#FF9800', linewidth=1.0, linestyle='--',
                  label='CDF Baseline')
     axes[0].axhline(y=config.INITIAL_BALANCE, color='gray',

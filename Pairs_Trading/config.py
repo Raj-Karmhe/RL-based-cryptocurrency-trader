@@ -29,7 +29,7 @@ ASSET_B_PATH    = os.path.join(DATA_DIR, f"{ASSET_B.replace('/', '_')}_{TIMEFRAM
 MERGED_PATH     = os.path.join(DATA_DIR, "merged_pair_data.csv")
 SCALER_PATH     = os.path.join(DATA_DIR, "pairs_scaler.pkl")
 
-MODEL_NAME      = "clstm_ppo_pairs_trading_BTC_XRP"
+MODEL_NAME      = f"clstm_ppo_pairs_trading_{ASSET_A_LABEL}_{ASSET_B_LABEL}"
 MODEL_PATH      = os.path.join(MODEL_DIR, MODEL_NAME)
 
 # Create directories
@@ -52,10 +52,11 @@ MAX_ADAPTIVE_WINDOW       = 336    # Maximum window size for OU adaptive window
 
 # ── Trading Simulator Settings ─────────────────────────────────────────────────
 INITIAL_BALANCE           = 100_000      # Starting capital in USD
-TRANSACTION_FEE           = 0.001        # 0.1% per leg (Binance standard)
-SLIPPAGE                  = 0.0005       # 0.05% per leg
-REWARD_SCALING            = 1e-4         # Scales reward for PPO stability
-MAX_POSITION_FRACTION     = 0.10         # Max fraction of capital per leg
+TRANSACTION_FEE           = 0.006        # 0.6% transaction fee
+SLIPPAGE_BASE             = 0.004        # 0.4% base slippage
+SLIPPAGE_IMPACT_FACTOR    = 0.0010       # 0.10% additional slippage per $100k traded
+MAX_TRADE_NOTIONAL        = 50000.0      # Maximum dollar amount per leg per trade
+MAX_POSITION_FRACTION     = 0.20         # Kelly fraction limit: max 20% of portfolio per trade
 MARGIN_REQUIREMENT        = 0.5          # 50% margin for short positions
 
 # ── Risk Management ────────────────────────────────────────────────────────────
@@ -68,7 +69,7 @@ COINT_BREAKDOWN_PVALUE    = 0.20
 # Maximum position hold time (hours) — force-close to prevent regime drift
 MAX_HOLD_HOURS            = 336          # 2 weeks
 # Z-score emergency exit — if |z| exceeds this, something is broken
-ZSCORE_EMERGENCY_EXIT     = 4.0
+ZSCORE_EMERGENCY_EXIT     = 5.0
 # Z-Score Cooldown (Regime Blocking) — Block new trades until spread normalizes
 ZSCORE_COOLDOWN_TRIGGER   = 3.5
 ZSCORE_COOLDOWN_RELEASE   = 2.75
@@ -93,7 +94,7 @@ CLIP_RANGE                = 0.2
 ENT_COEF                  = 0.001
 VF_COEF                   = 0.5
 MAX_GRAD_NORM             = 0.5
-FORCE_RETRAIN             = True
+FORCE_RETRAIN             = False
 
 # ── Feature Engineering Settings ───────────────────────────────────────────────
 RSI_PERIOD                = 14
@@ -136,7 +137,7 @@ PER_ASSET_FEATURES_BASE = [
     'ATR_Pct',
     'Volume_Ratio',
     'Volatility_20d',
-    'BB_Position',
+    'Volatility_20h',
     'Funding_Rate',
 ]
 
@@ -171,5 +172,5 @@ TEST_RATIO                = 0.10         # 6 months
 
 # ── Turbulence Index ───────────────────────────────────────────────────────────
 TURBULENCE_LOOKBACK       = 252          # ~10.5 days of hourly data
-TURBULENCE_PERCENTILE     = 100
-TURBULENCE_THRESHOLD      = None         # Computed at runtime from training data
+TURBULENCE_PERCENTILE     = 95
+TURBULENCE_THRESHOLD      = 100.0        # Hardcoded ceiling to prevent whipsawing

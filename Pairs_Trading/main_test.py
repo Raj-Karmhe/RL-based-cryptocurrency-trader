@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch
+
 from stable_baselines3 import PPO
 
 # ==============================================================================
@@ -51,9 +51,9 @@ def run_test():
     baseline_metrics = compute_metrics(baseline_pv, config.TIMEFRAME)
 
     # ── 5. Print Results ──────────────────────────────────────────────────
-    print(f"\n{'─'*80}")
+    print(f"\n{'-'*80}")
     print(f"  {'Metric':<35} {'CLSTM-PPO':>15} {'CDF Baseline':>18}")
-    print(f"{'─'*80}")
+    print(f"{'-'*80}")
     print(f"  {'Total Return (%)':<35} {tm['total_return']*100:>15.2f} "
           f"{baseline_metrics['total_return']*100:>18.2f}")
     print(f"  {'Max Drawdown (%)':<35} {tm['max_drawdown']*100:>15.2f} "
@@ -65,7 +65,7 @@ def run_test():
     print(f"  {'Win Rate (%)':<35} {tm['win_rate']*100:>15.2f}")
     print(f"  {'Final Portfolio ($)':<35} {tm['final_portfolio']:>15,.2f} "
           f"{baseline_metrics['final_portfolio']:>18,.2f}")
-    print(f"{'─'*80}")
+    print(f"{'-'*80}")
     print(f"  {'Total Trades':<35} {test_results['total_trades']:>15}")
     print(f"  {'Stop-Loss Exits':<35} {test_results['sl_triggers']:>15}")
     print(f"  {'Take-Profit Exits':<35} {test_results['tp_triggers']:>15}")
@@ -73,7 +73,7 @@ def run_test():
     print(f"  {'Emergency Z-Score Exits':<35} {test_results['emergency_exits']:>15}")
     print(f"  {'Turbulence Exits':<35} {test_results['turb_exits']:>15}")
     print(f"  {'Total Fees Paid ($)':<35} {test_results['total_fees']:>15,.2f}")
-    print(f"{'─'*80}")
+    print(f"{'-'*80}")
 
     # ── 6. Save Metrics ──────────────────────────────────────────────────
     metrics_path = os.path.join(config.RESULTS_DIR, 'test_metrics.json')
@@ -361,14 +361,30 @@ def generate_interactive_chart(results, baseline_pv, df_raw):
     close_b = df_raw['Close_B'].values[start_idx:start_idx + min_len]
     spreads = df_raw['Spread'].values[start_idx:start_idx + min_len]
     
-    coint_4h = df_raw['Cointegration_P_Value_4h'].values[start_idx:start_idx + min_len]
-    coint_1d = df_raw['Cointegration_P_Value_1d'].values[start_idx:start_idx + min_len]
-    vol_corr = df_raw['Volume_Corr'].values[start_idx:start_idx + min_len]
+    # Safely access optional columns with fallback
+    coint_4h = df_raw['Cointegration_P_Value_4h'].values[start_idx:start_idx + min_len] if 'Cointegration_P_Value_4h' in df_raw.columns else np.full(min_len, np.nan)
+    coint_1d = df_raw['Cointegration_P_Value_1d'].values[start_idx:start_idx + min_len] if 'Cointegration_P_Value_1d' in df_raw.columns else np.full(min_len, np.nan)
+    vol_corr = df_raw['Volume_Corr'].values[start_idx:start_idx + min_len] if 'Volume_Corr' in df_raw.columns else np.full(min_len, np.nan)
     
-    fig = make_subplots(rows=5, cols=1, shared_xaxes=True, 
+    # Determine how many panels we need based on data availability
+    has_coint = not np.all(np.isnan(coint_4h))
+    has_vol_corr = not np.all(np.isnan(vol_corr))
+    n_rows = 3 + int(has_coint) + int(has_vol_corr)
+    subplot_titles = ['Normalized Asset Prices', 'Spread Value & Trades', 'Portfolio Performance']
+    row_heights = [0.3, 0.3, 0.25]
+    if has_coint:
+        subplot_titles.append('Cointegration (ADF P-Value)')
+        row_heights.append(0.15)
+    if has_vol_corr:
+        subplot_titles.append('Volume Correlation')
+        row_heights.append(0.15)
+    # Normalize row heights
+    total_h = sum(row_heights)
+    row_heights = [h / total_h for h in row_heights]
+    fig = make_subplots(rows=n_rows, cols=1, shared_xaxes=True, 
                         vertical_spacing=0.03,
-                        subplot_titles=('Normalized Asset Prices', 'Spread Value & Trades', 'Portfolio Performance', 'Cointegration (ADF P-Value)', 'Volume Correlation'),
-                        row_heights=[0.25, 0.25, 0.2, 0.15, 0.15])
+                        subplot_titles=subplot_titles,
+                        row_heights=row_heights)
                         
     norm_a = close_a / close_a[0] * 100
     norm_b = close_b / close_b[0] * 100
@@ -413,18 +429,20 @@ def generate_interactive_chart(results, baseline_pv, df_raw):
     fig.add_trace(go.Scatter(x=dates[:min_len], y=pv[:min_len], name='CLSTM-PPO', line=dict(color='#4CAF50')), row=3, col=1)
     fig.add_trace(go.Scatter(x=dates[:baseline_min], y=baseline_pv[:baseline_min], name='Baseline', line=dict(color='#FF9800', dash='dash')), row=3, col=1)
     
-    # 4. Cointegration
-    fig.add_trace(go.Scatter(x=dates[:min_len], y=coint_4h[:min_len], name='P-Value (4h)', line=dict(color='#00BCD4')), row=4, col=1)
-    fig.add_trace(go.Scatter(x=dates[:min_len], y=coint_1d[:min_len], name='P-Value (1d)', line=dict(color='#8BC34A')), row=4, col=1)
-    # Highlight area where p > 0.05 (Null hypothesis not rejected = blocked/unsafe)
-    fig.add_hrect(y0=0.05, y1=1.0, fillcolor="red", opacity=0.2, line_width=0, row=4, col=1, annotation_text="Not Cointegrated (Blocked)", annotation_position="top left")
+    # 4. Cointegration (if available)
+    next_row = 4
+    if has_coint:
+        fig.add_trace(go.Scatter(x=dates[:min_len], y=coint_4h[:min_len], name='P-Value (4h)', line=dict(color='#00BCD4')), row=next_row, col=1)
+        fig.add_trace(go.Scatter(x=dates[:min_len], y=coint_1d[:min_len], name='P-Value (1d)', line=dict(color='#8BC34A')), row=next_row, col=1)
+        fig.add_hrect(y0=0.05, y1=1.0, fillcolor="red", opacity=0.2, line_width=0, row=next_row, col=1, annotation_text="Not Cointegrated (Blocked)", annotation_position="top left")
+        next_row += 1
     
-    # 5. Correlation
-    fig.add_trace(go.Scatter(x=dates[:min_len], y=vol_corr[:min_len], name='Volume Correlation', line=dict(color='#E91E63')), row=5, col=1)
-    
-    fig.update_layout(title=f"Interactive Pairs Trading Backtest: {config.ASSET_A_LABEL} vs {config.ASSET_B_LABEL}",
-                      height=1200, template="plotly_dark", hovermode="x unified")
-                      
+    # 5. Correlation (if available)
+    if has_vol_corr:
+        fig.add_trace(go.Scatter(x=dates[:min_len], y=vol_corr[:min_len], name='Volume Correlation', line=dict(color='#E91E63')), row=next_row, col=1)
+    # 5. Correlation (if available)
+    if has_vol_corr:
+        fig.add_trace(go.Scatter(x=dates[:min_len], y=vol_corr[:min_len], name='Volume Correlation', line=dict(color='#E91E63')), row=next_row, col=1)
     path = os.path.join(config.RESULTS_DIR, 'interactive_backtest.html')
     fig.write_html(path)
     print(f"  Interactive HTML chart saved: {path}")

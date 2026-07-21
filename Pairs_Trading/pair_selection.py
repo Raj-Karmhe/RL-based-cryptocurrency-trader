@@ -193,9 +193,9 @@ def rolling_cointegration_check(price_a: pd.Series, price_b: pd.Series,
     pvalues = []
     timestamps = []
 
-    for i in range(window, n, window // 4):  # Step by 1/4 window for overlap
-        end = min(i + window, n)
-        if end - i < window // 2:
+    for i in range(0, n - window + 1, window // 4):  # Start from 0, step by 1/4 window
+        end = i + window
+        if end > n:
             break
 
         la = log_a[i:end]
