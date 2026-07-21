@@ -230,6 +230,15 @@ def compute_spread_baseline(df, initial_balance=config.INITIAL_BALANCE):
         cdf = cdfs[i - 1]
         hr = abs(hedge_ratios[i - 1])
 
+        # Price Circuit Breaker
+        if position != 0 and entry_price_a > 0 and entry_price_b > 0:
+            pct_a = (close_a[i] - entry_price_a) / entry_price_a
+            pct_b = (close_b[i] - entry_price_b) / entry_price_b
+            if position == 1 and (pct_a < -0.15 or pct_b > 0.15):
+                cdf = 0.5  # Force exit condition
+            elif position == -1 and (pct_a > 0.15 or pct_b < -0.15):
+                cdf = 0.5  # Force exit condition
+
         # Entry signals
         if position == 0:
             if cdf < 0.05:  # Spread too low → long spread
