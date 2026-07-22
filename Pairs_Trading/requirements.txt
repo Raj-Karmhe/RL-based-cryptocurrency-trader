@@ -11,3 +11,4 @@ matplotlib>=3.7
 scipy>=1.11
 tqdm>=4.65
 plotly>=5.0
+yfinance>=0.2.0

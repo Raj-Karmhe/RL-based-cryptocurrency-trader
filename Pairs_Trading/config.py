@@ -7,17 +7,14 @@ import os
 # two-asset spread trading.
 # ==============================================================================
 
-# ── Asset Pair Settings ───────────────────────────────────────────────────────
-# We trade the spread between two cointegrated crypto assets.
-# XRP/BTC is an example of a cointegrated pair.
-ASSET_A         = "XRP/USDT"       # The "dependent" asset (long leg)
-ASSET_B         = "BTC/USDT"       # The "independent" asset (short leg)
-ASSET_A_LABEL   = "XRP"
-ASSET_B_LABEL   = "BTC"
-TIMEFRAME       = "1h"
-
-# How many years of hourly data to fetch (5 years ≈ 43,800 candles per asset)
-DATA_YEARS      = 5
+# TCS and INFY are highly cointegrated Indian IT stocks.
+ASSET_A         = "TCS.NS"         # The "dependent" asset (long leg)
+ASSET_B         = "INFY.NS"        # The "independent" asset (short leg)
+ASSET_A_LABEL   = "TCS"
+ASSET_B_LABEL   = "INFY"
+TIMEFRAME       = "1d"
+# How many years of hourly data to fetch (10 years for daily data)
+DATA_YEARS      = 10
 
 # ── File Paths ─────────────────────────────────────────────────────────────────
 DATA_DIR        = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
@@ -40,15 +37,15 @@ for d in [DATA_DIR, MODEL_DIR, RESULTS_DIR]:
 COINT_PVALUE_THRESHOLD    = 0.05   # Max p-value for Engle-Granger cointegration
 ADF_PVALUE_THRESHOLD      = 0.05   # Max p-value for ADF test on spread
 HURST_THRESHOLD           = 0.5    # Max Hurst exponent (< 0.5 = mean reverting)
-ROLLING_COINT_WINDOW      = 720    # 30 days of hourly data for rolling cointegration
+ROLLING_COINT_WINDOW      = 252    # 1 year of daily data for rolling cointegration
 ROLLING_COINT_MIN_PASS    = 0.70   # At least 70% of rolling windows must be cointegrated
 
 # ── Spread Construction ────────────────────────────────────────────────────────
-HEDGE_RATIO_WINDOW        = 168    # 1 week (168 hours) rolling OLS window for hedge ratio
-SPREAD_ZSCORE_WINDOW      = 72     # 3 days rolling window for z-score calculation
-HALF_LIFE_WINDOW          = 168    # 1 week window for half-life estimation
-MIN_ADAPTIVE_WINDOW       = 24     # Minimum window size for OU adaptive window
-MAX_ADAPTIVE_WINDOW       = 336    # Maximum window size for OU adaptive window
+HEDGE_RATIO_WINDOW        = 63     # 3 months rolling OLS window for hedge ratio
+SPREAD_ZSCORE_WINDOW      = 21     # 1 month rolling window for z-score calculation
+HALF_LIFE_WINDOW          = 63     # 3 months window for half-life estimation
+MIN_ADAPTIVE_WINDOW       = 21     # Minimum window size for OU adaptive window
+MAX_ADAPTIVE_WINDOW       = 126    # Maximum window size for OU adaptive window
 
 # ── Trading Simulator Settings ─────────────────────────────────────────────────
 INITIAL_BALANCE           = 100_000      # Starting capital in USD
@@ -66,8 +63,8 @@ ZSCORE_TAKE_PROFIT        = 0.5
 ZSCORE_STOP_LOSS          = 4.0          
 # Cointegration breakdown: if rolling p-value > this, force-close
 COINT_BREAKDOWN_PVALUE    = 0.20
-# Maximum position hold time (hours) — force-close to prevent regime drift
-MAX_HOLD_HOURS            = 336          # 2 weeks
+# Maximum position hold time (days) — force-close to prevent regime drift
+MAX_HOLD_HOURS            = 63           # ~3 months
 # Z-score emergency exit — if |z| exceeds this, something is broken
 ZSCORE_EMERGENCY_EXIT     = 5.0
 # Z-Score Cooldown (Regime Blocking) — Block new trades until spread normalizes
@@ -77,14 +74,14 @@ ZSCORE_COOLDOWN_RELEASE   = 2.75
 PRICE_CIRCUIT_BREAKER_PCT = 0.15
 
 # ── CLSTM Neural Network Architecture ──────────────────────────────────────────
-TIME_WINDOW               = 72           # Look-back window (hours)
+TIME_WINDOW               = 21           # Look-back window (days)
 LSTM_HIDDEN_SIZE          = 256          # LSTM hidden state size
 LSTM_OUT_FEATURES         = 128          # Output feature vector size
 N_LSTM_LAYERS             = 1            # LSTM depth (1 to avoid overfitting)
 DUAL_STREAM               = True         # Use dual-stream LSTM (separate for each asset + spread)
 
 # ── PPO Hyperparameters ────────────────────────────────────────────────────────
-TOTAL_TIMESTEPS           = 10_000_000
+TOTAL_TIMESTEPS           = 2_000_000
 LEARNING_RATE             = 5e-5
 N_STEPS                   = 8192
 BATCH_SIZE                = 128
