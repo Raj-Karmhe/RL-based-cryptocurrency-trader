@@ -81,7 +81,7 @@ N_LSTM_LAYERS             = 1            # LSTM depth (1 to avoid overfitting)
 DUAL_STREAM               = True         # Use dual-stream LSTM (separate for each asset + spread)
 
 # ── PPO Hyperparameters ────────────────────────────────────────────────────────
-TOTAL_TIMESTEPS           = 5_000_000
+TOTAL_TIMESTEPS           = 25_000_000
 LEARNING_RATE             = 5e-5
 N_STEPS                   = 8192
 BATCH_SIZE                = 128
