@@ -170,7 +170,7 @@ class PairsTradingEnv(gym.Env):
 
         # ATR for spread (approximate: use spread rolling std as a proxy)
         spread_series = pd.Series(self.spreads)
-        self.spread_atrs = spread_series.rolling(config.ATR_PERIOD).std().fillna(
+        self.spread_atrs = spread_series.rolling(config.VOLATILITY_WINDOW).std().fillna(
             spread_series.std()
         ).values.astype(np.float64)
 
