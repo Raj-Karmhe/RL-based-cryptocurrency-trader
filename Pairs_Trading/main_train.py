@@ -68,8 +68,7 @@ def train_and_validate():
     if os.path.exists(config.MODEL_PATH + ".zip") and not config.FORCE_RETRAIN:
         print(f"INFO: Loading pre-trained model from {config.MODEL_PATH}.zip...")
         model = PPO.load(config.MODEL_PATH, env=train_env)
-        callback = PairsTradingCallback(verbose=0)
-        print("SUCCESS: Model loaded!")
+        print("SUCCESS: Model loaded! Resuming training...")
     else:
         print("INFO: Training CLSTM-PPO Pairs Trading agent from scratch...")
         print(f"   Timesteps:     {config.TOTAL_TIMESTEPS:,}")
@@ -111,15 +110,16 @@ def train_and_validate():
             ),
         )
 
-        callback = PairsTradingCallback(verbose=1)
-        model.learn(
-            total_timesteps=config.TOTAL_TIMESTEPS,
-            callback=callback,
-            progress_bar=False,
-        )
+    callback = PairsTradingCallback(verbose=1)
+    model.learn(
+        total_timesteps=config.TOTAL_TIMESTEPS,
+        callback=callback,
+        progress_bar=False,
+        reset_num_timesteps=False
+    )
 
-        model.save(config.MODEL_PATH)
-        print(f"\nSUCCESS: Training complete! Model saved to {config.MODEL_PATH}.zip")
+    model.save(config.MODEL_PATH)
+    print(f"\nSUCCESS: Training complete! Model saved to {config.MODEL_PATH}.zip")
 
     # ── Step 6: Validation Evaluation ─────────────────────────────────────
     print("\n" + "=" * 70)
