@@ -74,10 +74,11 @@ def train_and_validate():
     if os.path.isdir(model_dir_path) and not os.path.exists(model_zip_path):
         print(f"INFO: Kaggle auto-extracted the model into a directory. Re-packing to {model_zip_path}...")
         shutil.make_archive(model_dir_path, 'zip', model_dir_path)
+        shutil.rmtree(model_dir_path)  # Delete the directory so SB3 doesn't get confused!
 
     if os.path.exists(model_zip_path) and not config.FORCE_RETRAIN:
-        print(f"INFO: Loading pre-trained model from {config.MODEL_PATH}.zip...")
-        model = PPO.load(config.MODEL_PATH, env=train_env)
+        print(f"INFO: Loading pre-trained model from {model_zip_path}...")
+        model = PPO.load(model_zip_path, env=train_env)
         print("SUCCESS: Model loaded! Resuming training...")
     else:
         print("INFO: Training CLSTM-PPO Pairs Trading agent from scratch...")
