@@ -65,7 +65,17 @@ def train_and_validate():
     train_env = SubprocVecEnv([make_env(train_r, train_s, config.FEATURE_COLUMNS) for _ in range(8)])
 
     # ── Step 5: Create or Load Model ──────────────────────────────────────
-    if os.path.exists(config.MODEL_PATH + ".zip") and not config.FORCE_RETRAIN:
+    model_dir_path = config.MODEL_PATH
+    model_zip_path = config.MODEL_PATH + ".zip"
+
+    # Fix for Kaggle Dataset Auto-Extraction: 
+    # If Kaggle extracted our .zip into a folder, we must zip it back up for SB3
+    import shutil
+    if os.path.isdir(model_dir_path) and not os.path.exists(model_zip_path):
+        print(f"INFO: Kaggle auto-extracted the model into a directory. Re-packing to {model_zip_path}...")
+        shutil.make_archive(model_dir_path, 'zip', model_dir_path)
+
+    if os.path.exists(model_zip_path) and not config.FORCE_RETRAIN:
         print(f"INFO: Loading pre-trained model from {config.MODEL_PATH}.zip...")
         model = PPO.load(config.MODEL_PATH, env=train_env)
         print("SUCCESS: Model loaded! Resuming training...")
