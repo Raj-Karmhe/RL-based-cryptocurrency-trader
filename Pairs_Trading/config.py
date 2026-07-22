@@ -14,7 +14,7 @@ ASSET_A_LABEL   = "TCS"
 ASSET_B_LABEL   = "INFY"
 TIMEFRAME       = "1d"
 # How many years of hourly data to fetch (10 years for daily data)
-DATA_YEARS      = 10
+DATA_YEARS      = 7
 
 # ── File Paths ─────────────────────────────────────────────────────────────────
 DATA_DIR        = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
@@ -94,12 +94,6 @@ MAX_GRAD_NORM             = 0.5
 FORCE_RETRAIN             = True
 
 # ── Feature Engineering Settings ───────────────────────────────────────────────
-RSI_PERIOD                = 14
-MACD_FAST, MACD_SLOW, MACD_SIGNAL = 12, 26, 9
-BB_PERIOD, BB_STD         = 20, 2
-ATR_PERIOD                = 14
-SMA_SHORT                 = 10
-SMA_LONG                  = 50
 VOLATILITY_WINDOW         = 20
 
 # ── Feature Columns ───────────────────────────────────────────────────────────
@@ -114,10 +108,6 @@ SPREAD_FEATURES = [
     'Half_Life',
     'Hedge_Ratio_Change',
     'Spread_Volatility',
-    'Spread_RSI',
-    'Spread_BB_Position',
-    'Spread_MACD',
-    'Spread_MACD_Signal',
     'Spread_CDF_KDE',
     'Spread_ZScore_4h',
     'Spread_ZScore_1d',
@@ -130,12 +120,9 @@ SPREAD_FEATURES = [
 # Per-asset features (suffixed with _A and _B during processing)
 PER_ASSET_FEATURES_BASE = [
     'Log_Return',
-    'RSI',
-    'ATR_Pct',
     'Volume_Ratio',
     'Volatility_20d',
     'Volatility_20h',
-    'Funding_Rate',
 ]
 
 # Cross-asset / relative features
@@ -144,6 +131,7 @@ CROSS_FEATURES = [
     'Volatility_Ratio',
     'Volume_Corr',
     'Price_Ratio_ZScore',
+    'Rolling_Correlation',
 ]
 
 # Build full feature list
@@ -163,9 +151,9 @@ N_CROSS_FEATURES = len(CROSS_FEATURES)
 N_PORTFOLIO_FEATURES = 4  # [position, unrealized_pnl, current_zscore, hedge_ratio]
 
 # ── Data Split Ratios ──────────────────────────────────────────────────────────
-TRAIN_RATIO               = 0.80         # 4 years
-VAL_RATIO                 = 0.10         # 6 months
-TEST_RATIO                = 0.10         # 6 months
+TRAIN_RATIO               = 0.714        # 5 years
+VAL_RATIO                 = 0.143        # 1 year
+TEST_RATIO                = 0.143        # 1 year
 
 # ── Turbulence Index ───────────────────────────────────────────────────────────
 TURBULENCE_LOOKBACK       = 252          # ~10.5 days of hourly data

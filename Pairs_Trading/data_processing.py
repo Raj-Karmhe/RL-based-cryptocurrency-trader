@@ -176,32 +176,20 @@ def add_multi_tf_features(df_merged: pd.DataFrame) -> pd.DataFrame:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def add_asset_features(df_merged: pd.DataFrame, suffix: str) -> pd.DataFrame:
-    from ta.momentum import RSIIndicator
-    from ta.volatility import BollingerBands, AverageTrueRange
-
     close = df_merged[f'Close{suffix}']
-    high = df_merged[f'High{suffix}']
-    low = df_merged[f'Low{suffix}']
     volume = df_merged[f'Volume{suffix}']
     
     df = pd.DataFrame(index=close.index)
 
     log_ret = np.log(close / close.shift(1))
     df[f'Log_Return{suffix}'] = log_ret
-    df[f'RSI{suffix}'] = RSIIndicator(close=close, window=config.RSI_PERIOD).rsi()
-    
-    atr = AverageTrueRange(high=high, low=low, close=close, window=config.ATR_PERIOD).average_true_range()
-    df[f'ATR_Pct{suffix}'] = atr / close
 
     vol_sma = volume.rolling(20).mean()
     df[f'Volume_Ratio{suffix}'] = volume / (vol_sma + 1e-8)
 
-    df[f'Volatility_20d{suffix}'] = log_ret.rolling(20 * 24).std() * np.sqrt(8760)
-    df[f'Volatility_20h{suffix}'] = log_ret.rolling(config.VOLATILITY_WINDOW).std() * np.sqrt(8760)
-    bb = BollingerBands(close=close, window=20, window_dev=2)
-    bb_upper = bb.bollinger_hband()
-    bb_lower = bb.bollinger_lband()
-    df[f'BB_Position{suffix}'] = (close - bb_lower) / (bb_upper - bb_lower + 1e-8)
+    # 252 trading days in a year for daily data
+    df[f'Volatility_20d{suffix}'] = log_ret.rolling(20).std() * np.sqrt(252)
+    df[f'Volatility_20h{suffix}'] = log_ret.rolling(config.VOLATILITY_WINDOW).std() * np.sqrt(252)
 
     # Explicitly include Funding_Rate from merged data if missing
     funding_col = f'Funding_Rate{suffix}'
@@ -216,9 +204,6 @@ def add_asset_features(df_merged: pd.DataFrame, suffix: str) -> pd.DataFrame:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def add_spread_features(spread: pd.Series, hedge_ratio: pd.Series) -> pd.DataFrame:
-    from ta.momentum import RSIIndicator
-    from ta.volatility import BollingerBands
-    from ta.trend import MACD
 
     df = pd.DataFrame(index=spread.index)
     window = config.SPREAD_ZSCORE_WINDOW
@@ -239,20 +224,6 @@ def add_spread_features(spread: pd.Series, hedge_ratio: pd.Series) -> pd.DataFra
     
     spread_returns = spread.diff()
     df['Spread_Volatility'] = spread_returns.rolling(window).std()
-
-    # Shift spread to positive values for RSI (which expects price-like data)
-    # Use a static constant to preserve period-to-period mathematical deltas
-    spread_shifted = spread + 10000.0
-    df['Spread_RSI'] = RSIIndicator(close=spread_shifted, window=config.RSI_PERIOD).rsi()
-    
-    bb = BollingerBands(close=spread, window=window, window_dev=2)
-    bb_upper = bb.bollinger_hband()
-    bb_lower = bb.bollinger_lband()
-    df['Spread_BB_Position'] = (spread - bb_lower) / (bb_upper - bb_lower + 1e-8)
-
-    macd = MACD(close=spread, window_slow=config.MACD_SLOW, window_fast=config.MACD_FAST, window_sign=config.MACD_SIGNAL)
-    df['Spread_MACD'] = macd.macd()
-    df['Spread_MACD_Signal'] = macd.macd_signal()
     df['Spread_CDF_KDE'] = compute_rolling_kde_cdf(spread, adaptive_windows)
 
     return df
@@ -271,11 +242,12 @@ def add_cross_features(close_a: pd.Series, close_b: pd.Series,
     vol_a = ret_a.rolling(config.VOLATILITY_WINDOW).std()
     vol_b = ret_b.rolling(config.VOLATILITY_WINDOW).std()
     df['Volatility_Ratio'] = vol_a / (vol_b + 1e-10)
-    df['Volume_Corr'] = volume_a.rolling(72).corr(volume_b)
+    df['Volume_Corr'] = volume_a.rolling(21).corr(volume_b)
     price_ratio = close_a / close_b
     ratio_mean = price_ratio.rolling(config.SPREAD_ZSCORE_WINDOW).mean()
     ratio_std = price_ratio.rolling(config.SPREAD_ZSCORE_WINDOW).std()
     df['Price_Ratio_ZScore'] = (price_ratio - ratio_mean) / (ratio_std + 1e-10)
+    df['Rolling_Correlation'] = ret_a.rolling(config.VOLATILITY_WINDOW).corr(ret_b)
     return df
 
 
