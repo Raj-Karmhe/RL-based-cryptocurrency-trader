@@ -440,9 +440,6 @@ def generate_interactive_chart(results, baseline_pv, df_raw):
     # 5. Correlation (if available)
     if has_vol_corr:
         fig.add_trace(go.Scatter(x=dates[:min_len], y=vol_corr[:min_len], name='Volume Correlation', line=dict(color='#E91E63')), row=next_row, col=1)
-    # 5. Correlation (if available)
-    if has_vol_corr:
-        fig.add_trace(go.Scatter(x=dates[:min_len], y=vol_corr[:min_len], name='Volume Correlation', line=dict(color='#E91E63')), row=next_row, col=1)
     path = os.path.join(config.RESULTS_DIR, 'interactive_backtest.html')
     fig.write_html(path)
     print(f"  Interactive HTML chart saved: {path}")

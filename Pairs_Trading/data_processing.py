@@ -196,7 +196,7 @@ def add_asset_features(df_merged: pd.DataFrame, suffix: str) -> pd.DataFrame:
     vol_sma = volume.rolling(20).mean()
     df[f'Volume_Ratio{suffix}'] = volume / (vol_sma + 1e-8)
 
-    df[f'Volatility_20d{suffix}'] = log_ret.rolling(config.VOLATILITY_WINDOW).std() * np.sqrt(8760)
+    df[f'Volatility_20d{suffix}'] = log_ret.rolling(20 * 24).std() * np.sqrt(8760)
     df[f'Volatility_20h{suffix}'] = log_ret.rolling(config.VOLATILITY_WINDOW).std() * np.sqrt(8760)
     bb = BollingerBands(close=close, window=20, window_dev=2)
     bb_upper = bb.bollinger_hband()
@@ -382,6 +382,8 @@ def process_and_split_data(df_a=None, df_b=None, df_merged=None):
     
     columns_to_scale = [col for col in config.FEATURE_COLUMNS if col not in do_not_scale]
 
+    df_raw_full = df_full.copy()
+
     for col in columns_to_scale:
         # RSI is bounded 0-100; scale it simply
         if 'RSI' in col:
@@ -397,18 +399,18 @@ def process_and_split_data(df_a=None, df_b=None, df_merged=None):
     train_end = int(config.TRAIN_RATIO * n)
     val_end = int((config.TRAIN_RATIO + config.VAL_RATIO) * n)
 
-    df_train = df_full.iloc[:train_end].copy()
-    df_val = df_full.iloc[train_end:val_end].copy()
-    df_test = df_full.iloc[val_end:].copy()
+    df_train = df_raw_full.iloc[:train_end].copy()
+    df_val = df_raw_full.iloc[train_end:val_end].copy()
+    df_test = df_raw_full.iloc[val_end:].copy()
 
     print(f"\n  Data Split (chronological, no overlap):")
     print(f"    Train:      {len(df_train):>8,} periods")
     print(f"    Validation: {len(df_val):>8,} periods")
     print(f"    Test:       {len(df_test):>8,} periods")
 
-    df_train_scaled = df_train.copy()
-    df_val_scaled = df_val.copy()
-    df_test_scaled = df_test.copy()
+    df_train_scaled = df_full.iloc[:train_end].copy()
+    df_val_scaled = df_full.iloc[train_end:val_end].copy()
+    df_test_scaled = df_full.iloc[val_end:].copy()
 
     print(f"\nSUCCESS: Data processing pipeline complete!")
     return (df_train_scaled, df_val_scaled, df_test_scaled, df_train, df_val, df_test)

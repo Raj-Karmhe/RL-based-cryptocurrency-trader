@@ -132,37 +132,12 @@ def process_historical_data(df_merged):
     return df, df_scaled
 
 def main():
-    # Target period: July 2019 to July 2021 (7 years ago to 5 years ago from 2026)
-    # But just to be precise to the previous logs: 2021-07-21 14:00 is end.
-    end_ms = int(datetime(2021, 7, 21, 14, 0).timestamp() * 1000)
-    start_ms = int(datetime(2019, 7, 21, 14, 0).timestamp() * 1000)
-    
-    print(f"Targeting data from 2019-07-21 to 2021-07-21")
-    
-    df_a = fetch_historical_ohlcv(config.ASSET_A, start_ms, end_ms)
-    df_b = fetch_historical_ohlcv(config.ASSET_B, start_ms, end_ms)
-    
-    fund_a = fetch_historical_funding(config.ASSET_A, start_ms, end_ms)
-    fund_b = fetch_historical_funding(config.ASSET_B, start_ms, end_ms)
-    
-    if df_a.empty or df_b.empty:
-        print("Not enough data fetched.")
+    print(f"Loading cached data from {config.MERGED_PATH}...")
+    if not os.path.exists(config.MERGED_PATH):
+        print("Cached data not found.")
         return
         
-    df_a = df_a.join(fund_a, how='left')
-    df_a['Funding_Rate'] = df_a['Funding_Rate'].ffill().fillna(0.0)
-    
-    df_b = df_b.join(fund_b, how='left')
-    df_b['Funding_Rate'] = df_b['Funding_Rate'].ffill().fillna(0.0)
-    
-    common_idx = df_a.index.intersection(df_b.index)
-    df_a = df_a.loc[common_idx]
-    df_b = df_b.loc[common_idx]
-    
-    df_merged = pd.DataFrame(index=common_idx)
-    for col in ['Open', 'High', 'Low', 'Close', 'Volume', 'Funding_Rate']:
-        df_merged[f'{col}_A'] = df_a[col].values
-        df_merged[f'{col}_B'] = df_b[col].values
+    df_merged = pd.read_csv(config.MERGED_PATH, index_col='Date', parse_dates=True)
         
     print(f"Merged aligned candles: {len(df_merged)}")
     

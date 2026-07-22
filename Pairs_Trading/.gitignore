@@ -20,3 +20,4 @@ results/
 # IDE
 .vscode/
 .idea/
+.env

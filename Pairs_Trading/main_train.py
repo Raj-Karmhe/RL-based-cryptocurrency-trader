@@ -22,10 +22,10 @@ from model import PairsLSTMFeatureExtractor
 from utils import PairsTradingCallback, run_agent
 
 
-def make_env(df_scaled, feature_columns):
+def make_env(df_raw, df_scaled, feature_columns):
     """Factory function for DummyVecEnv."""
     def _init():
-        return PairsTradingEnv(df=df_scaled, feature_columns=feature_columns)
+        return PairsTradingEnv(df=df_raw, df_scaled=df_scaled, feature_columns=feature_columns)
     return _init
 
 
@@ -62,7 +62,7 @@ def train_and_validate():
     print("=" * 70)
     # Spin up 8 parallel environments to feed the GPU 8x faster
     # Using SubprocVecEnv for actual parallel execution across CPU cores
-    train_env = SubprocVecEnv([make_env(train_s, config.FEATURE_COLUMNS) for _ in range(8)])
+    train_env = SubprocVecEnv([make_env(train_r, train_s, config.FEATURE_COLUMNS) for _ in range(8)])
 
     # ── Step 5: Create or Load Model ──────────────────────────────────────
     if os.path.exists(config.MODEL_PATH + ".zip") and not config.FORCE_RETRAIN:

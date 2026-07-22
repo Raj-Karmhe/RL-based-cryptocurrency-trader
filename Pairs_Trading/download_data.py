@@ -119,11 +119,23 @@ def fetch_funding_rates(symbol: str, years: int = 5) -> pd.DataFrame:
     return df
 
 
-def download_and_align_pair():
+def download_and_align_pair(force_download=False):
     """
     Downloads OHLCV & funding rates for both assets, aligns them by timestamp,
     forward-fills funding rates, and saves individual + merged CSVs.
     """
+    if not force_download and os.path.exists(config.ASSET_A_PATH) and os.path.exists(config.ASSET_B_PATH) and os.path.exists(config.MERGED_PATH):
+        print("=" * 70)
+        print("  PAIRS TRADING DATA DOWNLOAD")
+        print("=" * 70)
+        print(f"\n  Loading cached data from:")
+        print(f"  {config.MERGED_PATH}")
+        
+        df_a = pd.read_csv(config.ASSET_A_PATH, index_col='Date', parse_dates=True)
+        df_b = pd.read_csv(config.ASSET_B_PATH, index_col='Date', parse_dates=True)
+        df_merged = pd.read_csv(config.MERGED_PATH, index_col='Date', parse_dates=True)
+        return df_a, df_b, df_merged
+
     print("=" * 70)
     print("  PAIRS TRADING DATA DOWNLOAD")
     print(f"  Asset A: {config.ASSET_A}  |  Asset B: {config.ASSET_B}")

@@ -70,7 +70,8 @@ def run_agent(model, df_scaled, df_original, feature_columns,
         dict with portfolio values, positions, actions, trade log, and metrics
     """
     env = PairsTradingEnv(
-        df=df_scaled,
+        df=df_original,
+        df_scaled=df_scaled,
         feature_columns=feature_columns,
         initial_balance=initial_balance,
     )

@@ -9,7 +9,7 @@ import os
 
 # ── Asset Pair Settings ───────────────────────────────────────────────────────
 # We trade the spread between two cointegrated crypto assets.
-# ETH/BTC is the most liquid and historically strongest cointegrated pair.
+# XRP/BTC is an example of a cointegrated pair.
 ASSET_A         = "XRP/USDT"       # The "dependent" asset (long leg)
 ASSET_B         = "BTC/USDT"       # The "independent" asset (short leg)
 ASSET_A_LABEL   = "XRP"
@@ -52,12 +52,12 @@ MAX_ADAPTIVE_WINDOW       = 336    # Maximum window size for OU adaptive window
 
 # ── Trading Simulator Settings ─────────────────────────────────────────────────
 INITIAL_BALANCE           = 100_000      # Starting capital in USD
-TRANSACTION_FEE           = 0.006        # 0.6% transaction fee
-SLIPPAGE_BASE             = 0.004        # 0.4% base slippage
+TRANSACTION_FEE           = 0.001        # 0.6% transaction fee
+SLIPPAGE_BASE             = 0.0005        # 0.4% base slippage
 SLIPPAGE_IMPACT_FACTOR    = 0.0010       # 0.10% additional slippage per $100k traded
 MAX_TRADE_NOTIONAL        = 50000.0      # Maximum dollar amount per leg per trade
 MAX_POSITION_FRACTION     = 0.20         # Kelly fraction limit: max 20% of portfolio per trade
-MARGIN_REQUIREMENT        = 0.5          # 50% margin for short positions
+MARGIN_REQUIREMENT        = 1.0          # 50% margin for short positions
 
 # ── Risk Management ────────────────────────────────────────────────────────────
 # Z-Score Take Profit: Exit when the spread mean-reverts back near 0
@@ -84,7 +84,7 @@ N_LSTM_LAYERS             = 1            # LSTM depth (1 to avoid overfitting)
 DUAL_STREAM               = True         # Use dual-stream LSTM (separate for each asset + spread)
 
 # ── PPO Hyperparameters ────────────────────────────────────────────────────────
-TOTAL_TIMESTEPS           = 3_000_000
+TOTAL_TIMESTEPS           = 10_000_000
 LEARNING_RATE             = 5e-5
 N_STEPS                   = 8192
 BATCH_SIZE                = 128
@@ -94,7 +94,7 @@ CLIP_RANGE                = 0.2
 ENT_COEF                  = 0.001
 VF_COEF                   = 0.5
 MAX_GRAD_NORM             = 0.5
-FORCE_RETRAIN             = False
+FORCE_RETRAIN             = True
 
 # ── Feature Engineering Settings ───────────────────────────────────────────────
 RSI_PERIOD                = 14

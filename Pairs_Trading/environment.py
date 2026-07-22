@@ -54,7 +54,7 @@ class SpreadRiskManager:
         self.in_position = True
         self.hold_duration = 0
 
-    def check_exit(self, current_spread: float, current_zscore: float):
+    def check_exit(self, current_spread: float, current_zscore: float, current_coint_pvalue: float = 0.0):
         """
         Check all risk exit conditions.
 
@@ -65,6 +65,10 @@ class SpreadRiskManager:
             return False, None
 
         self.hold_duration += 1
+        
+        if current_coint_pvalue > getattr(config, 'COINT_BREAKDOWN_PVALUE', 0.20):
+            self.in_position = False
+            return True, 'coint_breakdown'
 
         # 1. Emergency z-score exit (highest priority — spread has blown out)
         if abs(current_zscore) > self.zscore_emergency:
@@ -134,6 +138,7 @@ class PairsTradingEnv(gym.Env):
     def __init__(
         self,
         df: pd.DataFrame,
+        df_scaled: pd.DataFrame = None,
         feature_columns: list = None,
         initial_balance: float = config.INITIAL_BALANCE,
         transaction_fee: float = config.TRANSACTION_FEE,
@@ -146,6 +151,7 @@ class PairsTradingEnv(gym.Env):
         super().__init__()
 
         self.df = df.reset_index(drop=True)
+        self.df_scaled = df_scaled.reset_index(drop=True) if df_scaled is not None else self.df
         self.feature_columns = feature_columns or config.FEATURE_COLUMNS
         self.initial_balance = initial_balance
         self.transaction_fee = transaction_fee
@@ -155,7 +161,7 @@ class PairsTradingEnv(gym.Env):
         self.use_turbulence = use_turbulence
 
         # ── Precompute arrays for fast access ─────────────────────────────
-        self.features = self.df[self.feature_columns].values.astype(np.float32)
+        self.features = self.df_scaled[self.feature_columns].values.astype(np.float32)
         self.close_a = self.df['Close_A'].values.astype(np.float64)
         self.close_b = self.df['Close_B'].values.astype(np.float64)
         self.spreads = self.df['Spread'].values.astype(np.float64)
@@ -183,6 +189,8 @@ class PairsTradingEnv(gym.Env):
         self.funding_a = self.df['Funding_Rate_A'].values.astype(np.float64) if 'Funding_Rate_A' in self.df.columns else np.zeros(self.n_steps)
         self.funding_b = self.df['Funding_Rate_B'].values.astype(np.float64) if 'Funding_Rate_B' in self.df.columns else np.zeros(self.n_steps)
         self.cdf_kde = self.df['Spread_CDF_KDE'].values.astype(np.float64) if 'Spread_CDF_KDE' in self.df.columns else np.full(self.n_steps, 0.5)
+        
+        self.coint_pvalue = self.df['Cointegration_P_Value_4h'].values.astype(np.float64) if 'Cointegration_P_Value_4h' in self.df.columns else np.zeros(self.n_steps)
 
         # ── Observation and Action spaces ─────────────────────────────────
         n_features = len(self.feature_columns)
@@ -216,6 +224,7 @@ class PairsTradingEnv(gym.Env):
         self.entry_spread_value = None
         self.entry_price_a = None
         self.entry_price_b = None
+        self.entry_hr = None
         self.units_a = 0.0           # Number of units of asset A
         self.units_b = 0.0           # Number of units of asset B
         self.entry_notional_a = 0.0  # Dollar value allocated to leg A
@@ -260,6 +269,7 @@ class PairsTradingEnv(gym.Env):
         current_zscore = self.zscores[self.current_step]
         current_hedge_ratio = self.hedge_ratios[self.current_step]
         current_spread_atr = self.spread_atrs[self.current_step]
+        current_coint = self.coint_pvalue[self.current_step]
 
         force_exit = False
         exit_reason = None
@@ -286,7 +296,7 @@ class PairsTradingEnv(gym.Env):
         # ── 3. Risk management checks ────────────────────────────────────
         if self.use_risk_management and not force_exit and abs(self.position) > 0.05:
             rm_exit, rm_reason = self.risk_manager.check_exit(
-                current_spread, current_zscore
+                current_spread, current_zscore, current_coint
             )
             
             # ── 3.5 Price Circuit Breaker (Black Swan Protection) ────────
@@ -313,16 +323,30 @@ class PairsTradingEnv(gym.Env):
 
         if abs(position_change) > 0.05:  # Minimum trade threshold
             trade_fraction = abs(position_change)
-            trade_value_per_leg = trade_fraction * self.portfolio_value * \
-                config.MAX_POSITION_FRACTION / 2.0
-            trade_value_per_leg = min(trade_value_per_leg, config.MAX_TRADE_NOTIONAL)
-
             def calc_cost(not_a, not_b):
                 slip_a = not_a * (self.slippage_base + (not_a / 100000.0) * getattr(config, 'SLIPPAGE_IMPACT_FACTOR', 0.0010))
                 slip_b = not_b * (self.slippage_base + (not_b / 100000.0) * getattr(config, 'SLIPPAGE_IMPACT_FACTOR', 0.0010))
                 fee_a = not_a * self.transaction_fee
                 fee_b = not_b * self.transaction_fee
                 return fee_a + slip_a + fee_b + slip_b
+
+            def get_allowed_notionals(target_total, hr, balance):
+                max_allowed_total = config.MAX_TRADE_NOTIONAL * (1.0 + hr) / max(1.0, hr)
+                target_total = min(target_total, max_allowed_total)
+                
+                # With margin, effective buying power is balance / MARGIN_REQUIREMENT
+                target_total = min(target_total, balance / getattr(config, 'MARGIN_REQUIREMENT', 1.0))
+                
+                notional_a = target_total / (1.0 + hr)
+                notional_b = target_total * hr / (1.0 + hr)
+                
+                est_cost = calc_cost(notional_a, notional_b)
+                total_req = (notional_a + notional_b) * getattr(config, 'MARGIN_REQUIREMENT', 1.0)
+                if total_req > (balance - est_cost):
+                    scale_factor = max(0.0, (balance - est_cost) / (total_req + 1e-8))
+                    notional_a *= scale_factor
+                    notional_b *= scale_factor
+                return notional_a, notional_b
 
             # Update position
             was_flat = abs(self.position) < 0.05
@@ -332,23 +356,29 @@ class PairsTradingEnv(gym.Env):
             if is_exiting:
                 # Close position: realize P&L
                 if self.entry_price_a is not None and self.entry_price_b is not None:
-                    trade_cost = calc_cost(self.entry_notional_a, self.entry_notional_b)
+                    current_notional_a = self.units_a * current_price_a
+                    current_notional_b = self.units_b * current_price_b
+                    trade_cost = calc_cost(current_notional_a, current_notional_b)
                     self.total_fees_paid += trade_cost
+                    
+                    hr_sign = np.sign(self.entry_hr) if self.entry_hr is not None else 1.0
 
-                    if self.position > 0:  # Was long spread (long A, short B)
+                    if self.position > 0:  # Was long spread
                         pnl_a = self.units_a * (current_price_a - self.entry_price_a)
-                        pnl_b = self.units_b * (self.entry_price_b - current_price_b)
-                    else:  # Was short spread (short A, long B)
+                        pnl_b = self.units_b * (self.entry_price_b - current_price_b) * hr_sign
+                    else:  # Was short spread
                         pnl_a = self.units_a * (self.entry_price_a - current_price_a)
-                        pnl_b = self.units_b * (current_price_b - self.entry_price_b)
+                        pnl_b = self.units_b * (current_price_b - self.entry_price_b) * hr_sign
 
                     total_pnl = pnl_a + pnl_b
-                    self.balance += (self.entry_notional_a + self.entry_notional_b) + total_pnl - trade_cost
+                    margin_req = (self.entry_notional_a + self.entry_notional_b) * getattr(config, 'MARGIN_REQUIREMENT', 1.0)
+                    self.balance += margin_req + total_pnl - trade_cost
 
                 self.units_a = 0.0
                 self.units_b = 0.0
                 self.entry_price_a = None
                 self.entry_price_b = None
+                self.entry_hr = None
                 self.entry_spread_value = None
                 self.entry_notional_a = 0.0
                 self.entry_notional_b = 0.0
@@ -356,23 +386,17 @@ class PairsTradingEnv(gym.Env):
 
             elif was_flat and is_entering:
                 # Open new position (Fractional distribution by hedge ratio)
-                target_total = min(trade_value_per_leg * 2.0, self.balance)
+                requested_total = trade_fraction * self.portfolio_value * config.MAX_POSITION_FRACTION
                 hr = abs(current_hedge_ratio)
                 
-                new_notional_a = target_total / (1.0 + hr)
-                new_notional_b = target_total * hr / (1.0 + hr)
+                new_notional_a, new_notional_b = get_allowed_notionals(requested_total, hr, self.balance)
                 
-                est_cost = calc_cost(new_notional_a, new_notional_b)
-                
-                # Constrain by balance
-                total_req = new_notional_a + new_notional_b
-                if total_req > (self.balance - est_cost):
-                    scale_factor = max(0.0, (self.balance - est_cost) / (total_req + 1e-8))
-                    new_notional_a *= scale_factor
-                    new_notional_b *= scale_factor
-                    
                 trade_cost = calc_cost(new_notional_a, new_notional_b)
                 self.total_fees_paid += trade_cost
+                
+                achieved_total = new_notional_a + new_notional_b
+                achieved_ratio = min(1.0, achieved_total / (requested_total + 1e-8)) if requested_total > 0 else 0.0
+                target_position = achieved_ratio * np.sign(target_position)
 
                 self.entry_notional_a = max(0.0, new_notional_a)
                 self.entry_notional_b = max(0.0, new_notional_b)
@@ -382,8 +406,10 @@ class PairsTradingEnv(gym.Env):
 
                 self.entry_price_a = current_price_a
                 self.entry_price_b = current_price_b
+                self.entry_hr = current_hedge_ratio
                 self.entry_spread_value = current_spread
-                self.balance -= (self.entry_notional_a + self.entry_notional_b + trade_cost)
+                margin_req = (self.entry_notional_a + self.entry_notional_b) * getattr(config, 'MARGIN_REQUIREMENT', 1.0)
+                self.balance -= (margin_req + trade_cost)
                 self.balance = max(0.0, self.balance)
 
                 ptype = 1 if target_position > 0 else -1
@@ -396,35 +422,33 @@ class PairsTradingEnv(gym.Env):
                 if is_reversal:
                     # Full close and reopen
                     if self.entry_price_a is not None:
+                        hr_sign = np.sign(self.entry_hr) if self.entry_hr is not None else 1.0
                         if self.position > 0:
                              pnl_a = self.units_a * (current_price_a - self.entry_price_a)
-                             pnl_b = self.units_b * (self.entry_price_b - current_price_b)
+                             pnl_b = self.units_b * (self.entry_price_b - current_price_b) * hr_sign
                         else:
                              pnl_a = self.units_a * (self.entry_price_a - current_price_a)
-                             pnl_b = self.units_b * (current_price_b - self.entry_price_b)
+                             pnl_b = self.units_b * (current_price_b - self.entry_price_b) * hr_sign
                         
-                        close_cost = calc_cost(self.entry_notional_a, self.entry_notional_b)
+                        current_notional_a = self.units_a * current_price_a
+                        current_notional_b = self.units_b * current_price_b
+                        close_cost = calc_cost(current_notional_a, current_notional_b)
                         self.total_fees_paid += close_cost
-                        self.balance += (self.entry_notional_a + self.entry_notional_b) + pnl_a + pnl_b - close_cost
+                        margin_req = (self.entry_notional_a + self.entry_notional_b) * getattr(config, 'MARGIN_REQUIREMENT', 1.0)
+                        self.balance += margin_req + pnl_a + pnl_b - close_cost
                         self.risk_manager.on_exit()
                         
-                    target_total = min(abs(target_position) * self.portfolio_value * config.MAX_POSITION_FRACTION, config.MAX_TRADE_NOTIONAL * 2.0)
-                    target_total = min(target_total, self.balance)
+                    requested_total = abs(target_position) * self.portfolio_value * config.MAX_POSITION_FRACTION
                     hr = abs(current_hedge_ratio)
                     
-                    new_notional_a = target_total / (1.0 + hr)
-                    new_notional_b = target_total * hr / (1.0 + hr)
+                    new_notional_a, new_notional_b = get_allowed_notionals(requested_total, hr, self.balance)
                     
-                    est_cost = calc_cost(new_notional_a, new_notional_b)
-                    
-                    total_req = new_notional_a + new_notional_b
-                    if total_req > (self.balance - est_cost):
-                        scale_factor = max(0.0, (self.balance - est_cost) / (total_req + 1e-8))
-                        new_notional_a *= scale_factor
-                        new_notional_b *= scale_factor
-                        
                     trade_cost = calc_cost(new_notional_a, new_notional_b)
                     self.total_fees_paid += trade_cost
+                    
+                    achieved_total = new_notional_a + new_notional_b
+                    achieved_ratio = min(1.0, achieved_total / (requested_total + 1e-8)) if requested_total > 0 else 0.0
+                    target_position = achieved_ratio * np.sign(target_position)
                     
                     self.entry_notional_a = max(0.0, new_notional_a)
                     self.entry_notional_b = max(0.0, new_notional_b)
@@ -433,8 +457,10 @@ class PairsTradingEnv(gym.Env):
                     self.units_b = self.entry_notional_b / current_price_b
                     self.entry_price_a = current_price_a
                     self.entry_price_b = current_price_b
+                    self.entry_hr = current_hedge_ratio
                     self.entry_spread_value = current_spread
-                    self.balance -= (self.entry_notional_a + self.entry_notional_b + trade_cost)
+                    margin_req = (self.entry_notional_a + self.entry_notional_b) * getattr(config, 'MARGIN_REQUIREMENT', 1.0)
+                    self.balance -= (margin_req + trade_cost)
                     
                     ptype = 1 if target_position > 0 else -1
                     self.risk_manager.on_entry(current_spread, current_zscore, ptype)
@@ -449,17 +475,21 @@ class PairsTradingEnv(gym.Env):
                         margin_freed_a = self.entry_notional_a * fraction_closed
                         margin_freed_b = self.entry_notional_b * fraction_closed
                         
-                        trade_cost = calc_cost(margin_freed_a, margin_freed_b)
+                        current_notional_a = (self.units_a * fraction_closed) * current_price_a
+                        current_notional_b = (self.units_b * fraction_closed) * current_price_b
+                        trade_cost = calc_cost(current_notional_a, current_notional_b)
                         self.total_fees_paid += trade_cost
                         
+                        hr_sign = np.sign(self.entry_hr) if self.entry_hr is not None else 1.0
                         if self.position > 0:
                             pnl_a = (self.units_a * fraction_closed) * (current_price_a - self.entry_price_a)
-                            pnl_b = (self.units_b * fraction_closed) * (self.entry_price_b - current_price_b)
+                            pnl_b = (self.units_b * fraction_closed) * (self.entry_price_b - current_price_b) * hr_sign
                         else:
                             pnl_a = (self.units_a * fraction_closed) * (self.entry_price_a - current_price_a)
-                            pnl_b = (self.units_b * fraction_closed) * (current_price_b - self.entry_price_b)
+                            pnl_b = (self.units_b * fraction_closed) * (current_price_b - self.entry_price_b) * hr_sign
                         
-                        self.balance += (margin_freed_a + margin_freed_b + pnl_a + pnl_b - trade_cost)
+                        margin_freed = (margin_freed_a + margin_freed_b) * getattr(config, 'MARGIN_REQUIREMENT', 1.0)
+                        self.balance += (margin_freed + pnl_a + pnl_b - trade_cost)
                         self.balance = max(0.0, self.balance)
                         
                         self.entry_notional_a -= margin_freed_a
@@ -469,22 +499,17 @@ class PairsTradingEnv(gym.Env):
                         
                     else:
                         # Scaling up (VWAP entry)
-                        target_total = min(trade_value_per_leg * 2.0, self.balance)
+                        requested_total = trade_fraction * self.portfolio_value * config.MAX_POSITION_FRACTION
                         hr = abs(current_hedge_ratio)
                         
-                        add_notional_a = target_total / (1.0 + hr)
-                        add_notional_b = target_total * hr / (1.0 + hr)
+                        add_notional_a, add_notional_b = get_allowed_notionals(requested_total, hr, self.balance)
                         
-                        est_cost = calc_cost(add_notional_a, add_notional_b)
-                        
-                        total_req = add_notional_a + add_notional_b
-                        if total_req > (self.balance - est_cost):
-                            scale_factor = max(0.0, (self.balance - est_cost) / (total_req + 1e-8))
-                            add_notional_a *= scale_factor
-                            add_notional_b *= scale_factor
-                            
                         trade_cost = calc_cost(add_notional_a, add_notional_b)
                         self.total_fees_paid += trade_cost
+                        
+                        achieved_total = add_notional_a + add_notional_b
+                        achieved_ratio = min(1.0, achieved_total / (requested_total + 1e-8)) if requested_total > 0 else 0.0
+                        target_position = self.position + achieved_ratio * np.sign(position_change)
                             
                         add_notional_a = max(0.0, add_notional_a)
                         add_notional_b = max(0.0, add_notional_b)
@@ -501,7 +526,8 @@ class PairsTradingEnv(gym.Env):
                         self.units_b += add_units_b
                         self.entry_notional_a += add_notional_a
                         self.entry_notional_b += add_notional_b
-                        self.balance -= (add_notional_a + add_notional_b + trade_cost)
+                        margin_req = (add_notional_a + add_notional_b) * getattr(config, 'MARGIN_REQUIREMENT', 1.0)
+                        self.balance -= (margin_req + trade_cost)
 
             self.position = target_position
 
@@ -544,21 +570,24 @@ class PairsTradingEnv(gym.Env):
                 notional_a = self.units_a * new_price_a
                 notional_b = self.units_b * new_price_b
                 
+                hr_sign = np.sign(self.entry_hr) if self.entry_hr is not None else 1.0
+                
                 if self.position > 0:  # Long spread
                     pnl_a = self.units_a * (new_price_a - self.entry_price_a)
-                    pnl_b = self.units_b * (self.entry_price_b - new_price_b)
-                    funding_cost = (notional_a * hourly_fund_a) + (notional_b * -hourly_fund_b)
+                    pnl_b = self.units_b * (self.entry_price_b - new_price_b) * hr_sign
+                    funding_cost = (notional_a * hourly_fund_a) + (notional_b * -hourly_fund_b * hr_sign)
                 else:  # Short spread
                     pnl_a = self.units_a * (self.entry_price_a - new_price_a)
-                    pnl_b = self.units_b * (new_price_b - self.entry_price_b)
-                    funding_cost = (notional_a * -hourly_fund_a) + (notional_b * hourly_fund_b)
+                    pnl_b = self.units_b * (new_price_b - self.entry_price_b) * hr_sign
+                    funding_cost = (notional_a * -hourly_fund_a) + (notional_b * hourly_fund_b * hr_sign)
                 
                 unrealized_pnl = pnl_a + pnl_b
                 self.balance -= funding_cost
                 self.balance = max(0.0, self.balance)  # Prevent negative balance
                 self.total_funding_paid += funding_cost
 
-            raw_pv = self.balance + self.entry_notional_a + self.entry_notional_b + unrealized_pnl
+            margin_req = (self.entry_notional_a + self.entry_notional_b) * getattr(config, 'MARGIN_REQUIREMENT', 1.0)
+            raw_pv = self.balance + margin_req + unrealized_pnl
             self.portfolio_value = max(0.0, min(raw_pv, self.initial_balance * 1000))
             self.peak_value = max(self.peak_value, self.portfolio_value)
 
@@ -592,12 +621,13 @@ class PairsTradingEnv(gym.Env):
         # Unrealized P&L as fraction of portfolio
         unrealized_pnl_frac = 0.0
         if self.entry_price_a is not None and abs(self.position) > 0.05:
+            hr_sign = np.sign(self.entry_hr) if self.entry_hr is not None else 1.0
             if self.position > 0:
                 pnl_a = self.units_a * (self.close_a[step] - self.entry_price_a)
-                pnl_b = self.units_b * (self.entry_price_b - self.close_b[step])
+                pnl_b = self.units_b * (self.entry_price_b - self.close_b[step]) * hr_sign
             else:
                 pnl_a = self.units_a * (self.entry_price_a - self.close_a[step])
-                pnl_b = self.units_b * (self.close_b[step] - self.entry_price_b)
+                pnl_b = self.units_b * (self.close_b[step] - self.entry_price_b) * hr_sign
             unrealized_pnl_frac = (pnl_a + pnl_b) / (self.portfolio_value + 1e-8)
 
         portfolio_state = np.array([
