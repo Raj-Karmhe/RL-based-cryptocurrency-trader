@@ -115,7 +115,7 @@ def train_and_validate():
         model.learn(
             total_timesteps=config.TOTAL_TIMESTEPS,
             callback=callback,
-            progress_bar=True,
+            progress_bar=False,
         )
 
         model.save(config.MODEL_PATH)
