@@ -1,0 +1,16 @@
+*.zip
+*.csv
+*.pkl
+*.db
+*.npz
+*.log
+*.html
+*.png
+models/
+old_model/
+data/
+results/
+.idea/
+__pycache__/
+logs/
+.venv/
