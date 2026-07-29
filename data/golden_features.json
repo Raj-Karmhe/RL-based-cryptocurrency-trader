@@ -6,9 +6,5 @@
     "1d_obv_zscore",
     "1d_adl_zscore",
     "1d_donchian_pct",
-    "1d_macd",
-    "1d_atr_pct",
-    "1d_mfi",
-    "1d_bb_bandwidth_zscore",
-    "1d_ao_zscore"
+    "1d_macd"
 ]

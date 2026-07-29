@@ -1,10 +1,10 @@
 {
     "Initial Balance ($)": 100000.0,
-    "Final Balance ($)": 99089.90188504355,
-    "Total Return (%)": -0.9100981149564468,
-    "Buy & Hold Return (%)": -27.651598886884788,
-    "Annualized Sharpe Ratio": -1.3477647988299646,
-    "Max Drawdown (%)": 1.8559521173557372,
-    "Total Trades": 18,
-    "Win Rate (%)": 44.44444444444444
+    "Final Balance ($)": 97190.47830237701,
+    "Total Return (%)": -2.8095216976229858,
+    "Buy & Hold Return (%)": -27.421272718112498,
+    "Annualized Sharpe Ratio": -1.533730866648377,
+    "Max Drawdown (%)": 4.123183154479374,
+    "Total Trades": 84,
+    "Win Rate (%)": 41.66666666666667
 }

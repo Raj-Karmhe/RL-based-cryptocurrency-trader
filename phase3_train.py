@@ -187,25 +187,31 @@ def execute_training(is_test_run: bool = False):
         net_arch=dict(pi=[64], vf=[64])  # Actor/critic heads following feature extraction
     )
     
-    # 5. Instantiate PPO
-    model = PPO(
-        "MlpPolicy",
-        train_env,
-        learning_rate=config.LEARNING_RATE,
-        n_steps=config.N_STEPS,
-        batch_size=config.BATCH_SIZE,
-        n_epochs=config.N_EPOCHS,
-        gamma=config.GAMMA,
-        gae_lambda=config.GAE_LAMBDA,
-        clip_range=config.CLIP_RANGE,
-        ent_coef=config.ENT_COEF,
-        vf_coef=config.VF_COEF,
-        max_grad_norm=config.MAX_GRAD_NORM,
-        target_kl=config.TARGET_KL,
-        seed=config.SEED,
-        policy_kwargs=policy_kwargs,
-        verbose=1
-    )
+    # 5. Instantiate or Load PPO Agent
+    model_file_path = config.MODEL_PATH + ".zip"
+    if not config.FORCE_RETRAIN and os.path.exists(model_file_path):
+        print(f"Loading existing PPO model checkpoint from {config.MODEL_PATH} (FORCE_RETRAIN=False)...")
+        model = PPO.load(config.MODEL_PATH, env=train_env)
+    else:
+        print("Instantiating new PPO model from scratch...")
+        model = PPO(
+            "MlpPolicy",
+            train_env,
+            learning_rate=config.LEARNING_RATE,
+            n_steps=config.N_STEPS,
+            batch_size=config.BATCH_SIZE,
+            n_epochs=config.N_EPOCHS,
+            gamma=config.GAMMA,
+            gae_lambda=config.GAE_LAMBDA,
+            clip_range=config.CLIP_RANGE,
+            ent_coef=config.ENT_COEF,
+            vf_coef=config.VF_COEF,
+            max_grad_norm=config.MAX_GRAD_NORM,
+            target_kl=config.TARGET_KL,
+            seed=config.SEED,
+            policy_kwargs=policy_kwargs,
+            verbose=1
+        )
     
     # Set timesteps (shorten if this is a verification run)
     timesteps = 2048 if is_test_run else config.TOTAL_TIMESTEPS

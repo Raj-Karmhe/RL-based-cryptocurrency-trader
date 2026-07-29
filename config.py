@@ -79,12 +79,12 @@ INDICATOR_SET = 22
 FORWARD_K = 5
 MI_DROP_BOTTOM_PCT = 0.30
 CORR_THRESHOLD = 0.80
-N_GOLDEN_FEATURES = (4, 8)
+N_GOLDEN_FEATURES = (4, 4)    # 4 hourly + 4 macro = 8 total golden features
 
 # --------------------------------------------------------
 # 4. Model Architecture Settings
 # --------------------------------------------------------
-SEQ_LEN = 24
+SEQ_LEN = 61                  # 61-hour sequence length matches 4-layer TCN receptive field (dilations 1,2,4,8)
 TCN_HIDDEN_SIZE = 64           # Channel width per TCN residual block
 TCN_N_LAYERS = 4               # Number of stacked residual blocks (dilations: 1,2,4,8)
 MLP_HIDDEN_SIZE = 256

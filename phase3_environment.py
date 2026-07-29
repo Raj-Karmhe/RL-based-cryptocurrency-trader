@@ -160,11 +160,11 @@ class CryptoTradingEnv(gym.Env):
         if max_start <= self.seq_len:
             # Dataset too small for randomization; always start at earliest valid index
             print(f"  [Warning] Dataset has {self.n_steps} rows, insufficient for {min_episode_len}-step episodes + {self.seq_len} warm-up. Training starts at step {self.seq_len}.")
-            self.current_step = self.seq_len
+            self.current_step = self.seq_len - 1
         elif not self.is_eval:
-            self.current_step = np.random.randint(self.seq_len, max_start)
+            self.current_step = np.random.randint(self.seq_len - 1, max_start)
         else:
-            self.current_step = self.seq_len
+            self.current_step = self.seq_len - 1
             
         self.balance = float(self.initial_balance)
         self.crypto_held = 0.0
@@ -355,13 +355,16 @@ class CryptoTradingEnv(gym.Env):
                 
         # 4. Step Time
         self.current_step += 1
-        terminated = self.current_step >= self.n_steps - 1
+        terminated = False
         truncated = False
         
-        if not terminated:
+        if self.current_step >= self.n_steps - 1:
+            truncated = True
+        
+        if not (terminated or truncated):
             new_price = self.prices_array[self.current_step]
         else:
-            # On terminal step, use the last valid price for final valuation (Bug #2: current_step == n_steps-1 here)
+            # On terminal/truncated step, use the last valid price for final valuation
             new_price = self.prices_array[self.n_steps - 1]
         
         # Always update portfolio value so the reward reflects the true final movement
@@ -380,7 +383,7 @@ class CryptoTradingEnv(gym.Env):
         else:
             self.position_allocation = 0.0
         
-        if not terminated:
+        if not (terminated or truncated):
             # Update sequence buffer only when episode continues
             self.obs_buffer = np.roll(self.obs_buffer, -1, axis=0)
             self.obs_buffer[-1] = self.features_array[self.current_step]
@@ -395,8 +398,8 @@ class CryptoTradingEnv(gym.Env):
             terminated = True
             
         # 5. Reward Calculation
-        reward = self._compute_step_reward(trade_costs, position_delta, pre_trade_portfolio_value)
-        
+        reward = self._compute_step_reward(position_delta)
+
         info = {
             "portfolio_value": self.portfolio_value,
             "balance": self.balance,
@@ -430,7 +433,7 @@ class CryptoTradingEnv(gym.Env):
         obs = np.concatenate([self.obs_buffer.flatten(), state_vars])
         return np.nan_to_num(obs, nan=0.0, posinf=1.0, neginf=-1.0).astype(np.float32)
         
-    def _compute_step_reward(self, trade_costs: float, position_delta: float, pre_trade_pv: float) -> float:
+    def _compute_step_reward(self, position_delta: float) -> float:
         """
         Computes the step reward based on returns, fees, drawdowns, and trading stability.
         """
