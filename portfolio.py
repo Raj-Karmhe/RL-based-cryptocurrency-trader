@@ -37,8 +37,6 @@ class Portfolio:
 
         self.portfolio_value = self.initial_balance
 
-        self.previous_value = self.initial_balance
-
     # -------------------------------------------------
 
     def buy(self, fraction, price):
@@ -93,7 +91,7 @@ class Portfolio:
 
         return self.portfolio_value
 
-        # -------------------------------------------------
+    # -------------------------------------------------
 
     def rebalance(self, target_fraction, current_price):
         """

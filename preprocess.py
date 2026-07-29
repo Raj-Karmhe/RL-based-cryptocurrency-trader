@@ -9,9 +9,6 @@ used for training.
 # Import functions
 # -----------------------------------
 
-from import_data import get_data
-from indicators import add_indicators
-
 
 # -----------------------------------
 # Preprocessing Function
@@ -59,6 +56,9 @@ def preprocess_data(df):
 # -----------------------------------
 
 if __name__ == "__main__":
+
+    from import_data import get_data
+    from indicators import add_indicators
 
     df = get_data()
 

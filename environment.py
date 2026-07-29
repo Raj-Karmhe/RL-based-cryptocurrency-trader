@@ -132,12 +132,6 @@ class TradingEnvironment(gym.Env):
 
         self.current_step = self.window_size
 
-        self.previous_portfolio_value = (
-
-            self.portfolio.portfolio_value
-
-        )
-
         self.max_portfolio_value = (
 
             self.portfolio.portfolio_value
@@ -172,12 +166,6 @@ class TradingEnvironment(gym.Env):
 
         # Reset environment variables
         self.current_step = self.window_size
-
-        self.previous_portfolio_value = (
-
-            self.portfolio.portfolio_value
-
-        )
 
         self.max_portfolio_value = (
 
@@ -235,12 +223,32 @@ class TradingEnvironment(gym.Env):
         target_fraction = (action + 1.0) / 2.0
 
         # --------------------------------------------
-        # Portfolio Before Trade
+        # Portfolio value BEFORE trade (at current price)
         # --------------------------------------------
 
-        previous_value = self.portfolio.update_value(
+        pre_trade_value = self.portfolio.update_value(
             current_price
         )
+
+        # --------------------------------------------
+        # High Volatility Override
+        # --------------------------------------------
+
+        current_atr = float(self.df.loc[self.current_step, "ATR"])
+        
+        # Disable trading if daily volatility (ATR/Price) > 6%
+        is_high_volatility = (current_atr / current_price) > 0.06
+
+        if is_high_volatility:
+            
+            # Force target_fraction to match current allocation (no trading)
+            if pre_trade_value > 0:
+                target_fraction = (self.portfolio.btc_held * current_price) / pre_trade_value
+            else:
+                target_fraction = 0.0
+                
+            # Reflect the forced action so it's logged properly
+            action = (target_fraction * 2.0) - 1.0
 
         # --------------------------------------------
         # Execute Trade
@@ -251,8 +259,32 @@ class TradingEnvironment(gym.Env):
             current_price
         )
 
+        # --------------------------------------------
+        # Next Step
+        # --------------------------------------------
+
+        self.current_step += 1
+
+        terminated = (
+
+            self.current_step >= len(self.df)
+
+        )
+
+        # --------------------------------------------
+        # Portfolio value AFTER advancing to next price
+        # This captures actual market movement in reward
+        # --------------------------------------------
+
+        if not terminated:
+            next_price = float(
+                self.df.loc[self.current_step, "Close"]
+            )
+        else:
+            next_price = current_price  # no further movement
+
         current_value = self.portfolio.update_value(
-            current_price
+            next_price
         )
 
         # --------------------------------------------
@@ -261,9 +293,9 @@ class TradingEnvironment(gym.Env):
 
         portfolio_return = (
 
-            current_value - previous_value
+            current_value - pre_trade_value
 
-        ) / max(previous_value, 1e-8)
+        ) / max(pre_trade_value, 1e-8)
 
         trade_penalty = 0.0005 * abs(action)
 
@@ -286,18 +318,6 @@ class TradingEnvironment(gym.Env):
             self.max_portfolio_value,
 
             current_value
-
-        )
-
-        # --------------------------------------------
-        # Next Step
-        # --------------------------------------------
-
-        self.current_step += 1
-
-        terminated = (
-
-            self.current_step >= len(self.df)
 
         )
 

@@ -6,8 +6,6 @@ Creates one final processed dataset.
 Run ONLY once.
 """
 
-import pandas as pd
-
 from import_data import get_data
 from indicators import add_indicators
 from preprocess import preprocess_data

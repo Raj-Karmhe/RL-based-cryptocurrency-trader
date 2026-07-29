@@ -94,7 +94,11 @@ df["Regime"] = hidden_states
 
 regime_dummies = pd.get_dummies(
     df["Regime"],
-    prefix="Regime"
+    prefix="Regime",
+    dtype=int
+).reindex(
+    columns=["Regime_0", "Regime_1", "Regime_2", "Regime_3"],
+    fill_value=0
 )
 
 df = pd.concat(
@@ -146,30 +150,6 @@ print()
 # Visualize Market Regimes
 # -----------------------------------
 
-import matplotlib.pyplot as plt
-
-colors = {
-
-    0: "blue",
-
-    1: "red",
-
-    2: "green",
-
-    3: "orange"
-
-}
-
-plt.figure(figsize=(18,8))
-
-plt.plot(
-    df.index,
-    df["Close"],
-    color="black",
-    linewidth=1.3,
-    label="BTC Price"
-)
-
 colors = {
 
     0:"#4CAF50",
@@ -181,6 +161,16 @@ colors = {
     3:"#FFC107"
 
 }
+
+plt.figure(figsize=(18, 8))
+
+plt.plot(
+    df.index,
+    df["Close"],
+    color="black",
+    linewidth=1.3,
+    label="BTC Price"
+)
 
 for regime in sorted(df["Regime"].unique()):
 

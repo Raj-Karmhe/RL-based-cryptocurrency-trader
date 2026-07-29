@@ -31,6 +31,6 @@ train_df, test_df = split_data(df)
 
 env = TradingEnvironment(train_df)
 
-observation = env.reset()
+observation, info = env.reset()
 
 print(observation)

@@ -1,7 +1,5 @@
 import ta
 
-from import_data import get_data
-
 
 # ----------------------------
 # Function to add indicators
@@ -88,6 +86,8 @@ def add_indicators(df):
 # ----------------------------
 
 if __name__ == "__main__":
+
+    from import_data import get_data
 
     df = get_data()
 

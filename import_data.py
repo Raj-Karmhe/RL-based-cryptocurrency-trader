@@ -1,6 +1,6 @@
 import ccxt
 import pandas as pd
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 
 def get_data():

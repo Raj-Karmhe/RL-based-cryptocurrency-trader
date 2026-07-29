@@ -29,7 +29,9 @@ train_df, test_df = split_data(df)
 
 def make_env():
 
-    return TradingEnvironment(test_df)
+    from stable_baselines3.common.monitor import Monitor
+
+    return Monitor(TradingEnvironment(test_df))
 
 
 env = DummyVecEnv([make_env])
@@ -63,7 +65,7 @@ model = PPO.load(
 
 obs = env.reset()
 
-done = False
+done = [False]
 
 
 # -----------------------------------------------------
@@ -81,7 +83,7 @@ step = 0
 # Evaluation Loop
 # -----------------------------------------------------
 
-while not done:
+while not done[0]:
 
     action, _ = model.predict(obs, deterministic=True)
 
@@ -99,31 +101,31 @@ while not done:
 
         print(f"Step : {step}")
 
-if done:
-    print("DONE!")
-    print(f"Portfolio : {portfolio_values[-1]:.2f}")
 # -----------------------------------------------------
 # Results
 # -----------------------------------------------------
 
-print("\nEvaluation Finished")
+if not portfolio_values:
+    print("No steps completed. Test set may be too small.")
+else:
+    print("\nEvaluation Finished")
 
-print(f"Total Steps : {step}")
+    print(f"Total Steps : {step}")
 
-print(f"Initial Portfolio : 100000")
+    print(f"Initial Portfolio : 100000")
 
-print(f"Final Portfolio : {portfolio_values[-1]:.2f}")
+    print(f"Final Portfolio : {portfolio_values[-1]:.2f}")
 
-total_return = (
+    total_return = (
 
-    portfolio_values[-1] - 100000
+        portfolio_values[-1] - 100000
 
-) / 100000 * 100
+    ) / 100000 * 100
 
-print(f"Return : {total_return:.2f}%")
+    print(f"Return : {total_return:.2f}%")
 
-print(f"Maximum Portfolio : {max(portfolio_values):.2f}")
+    print(f"Maximum Portfolio : {max(portfolio_values):.2f}")
 
-print(f"Minimum Portfolio : {min(portfolio_values):.2f}")
+    print(f"Minimum Portfolio : {min(portfolio_values):.2f}")
 
-print(f"Total Trades : {len(actions)}")
+    print(f"Total Trades : {len(actions)}")

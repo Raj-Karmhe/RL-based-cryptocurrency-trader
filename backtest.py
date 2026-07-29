@@ -12,7 +12,6 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.vec_env import VecNormalize
 
-import pandas as pd
 from split_data import split_data
 from environment import TradingEnvironment
 
@@ -61,7 +60,7 @@ model = PPO.load(
 
 obs = env.reset()
 
-done = False
+done = [False]
 
 portfolio_history = []
 
@@ -69,7 +68,7 @@ reward_history = []
 
 action_history = []
 
-while not done:
+while not done[0]:
 
     action, _ = model.predict(obs, deterministic=True)
 
@@ -88,99 +87,103 @@ while not done:
 # Metrics
 # ----------------------------------------
 
-portfolio = np.array(portfolio_history)
-
-returns = np.diff(portfolio) / portfolio[:-1]
-
-initial_portfolio = 100000
-
-total_return = (
-    portfolio[-1] - initial_portfolio
-) / initial_portfolio
-
-if np.std(returns) > 1e-8:
-    sharpe = (
-        np.mean(returns)
-        /
-        np.std(returns)
-    ) * np.sqrt(252)
+if not portfolio_history:
+    print("No steps completed. Test set may be too small.")
 else:
-    sharpe = 0.0
+    portfolio = np.array(portfolio_history)
 
-running_max = np.maximum.accumulate(portfolio)
+    returns = np.diff(portfolio) / portfolio[:-1]
 
-drawdown = (
-    portfolio - running_max
-) / running_max
+    initial_portfolio = 100000
 
-max_drawdown = np.min(drawdown)
+    total_return = (
+        portfolio[-1] - initial_portfolio
+    ) / initial_portfolio
 
+    if len(returns) > 0 and np.std(returns) > 1e-8:
+        sharpe = (
+            np.mean(returns)
+            /
+            np.std(returns)
+        ) * np.sqrt(252)
+    else:
+        sharpe = 0.0
 
-buy_count = np.sum(np.array(action_history) > 0)
+    running_max = np.maximum.accumulate(portfolio)
 
-sell_count = np.sum(np.array(action_history) < 0)
+    drawdown = (
+        portfolio - running_max
+    ) / running_max
 
-hold_count = np.sum(np.array(action_history) == 0)
+    max_drawdown = np.min(drawdown)
 
+    buy_count = np.sum(np.array(action_history) > 0)
 
-# ----------------------------------------
-# Print
-# ----------------------------------------
+    sell_count = np.sum(np.array(action_history) < 0)
 
-print("=" * 60)
+    hold_count = np.sum(np.array(action_history) == 0)
 
-print("BACKTEST RESULTS")
+    # ----------------------------------------
+    # Print
+    # ----------------------------------------
 
-print("=" * 60)
+    print("=" * 60)
 
-print(f"Final Portfolio : {portfolio[-1]:.2f}")
+    print("BACKTEST RESULTS")
 
-print(f"Return           : {total_return*100:.2f}%")
+    print("=" * 60)
 
-print(f"Sharpe Ratio     : {sharpe:.3f}")
+    print(f"Final Portfolio : {portfolio[-1]:.2f}")
 
-print(f"Max Drawdown     : {max_drawdown*100:.2f}%")
+    print(f"Return           : {total_return*100:.2f}%")
 
-print()
+    print(f"Sharpe Ratio     : {sharpe:.3f}")
 
-print(f"Buy Actions      : {buy_count}")
+    print(f"Max Drawdown     : {max_drawdown*100:.2f}%")
 
-print(f"Sell Actions     : {sell_count}")
+    print()
 
-print(f"Hold Actions     : {hold_count}")
+    print(f"Buy Actions      : {buy_count}")
 
-print()
+    print(f"Sell Actions     : {sell_count}")
 
-print(f"Highest Portfolio : {portfolio.max():.2f}")
+    print(f"Hold Actions     : {hold_count}")
 
-print(f"Lowest Portfolio  : {portfolio.min():.2f}")
+    print()
 
-print("=" * 60)
+    print(f"Highest Portfolio : {portfolio.max():.2f}")
+
+    print(f"Lowest Portfolio  : {portfolio.min():.2f}")
+
+    print("=" * 60)
 
 
 # ----------------------------------------
 # Plot
 # ----------------------------------------
 
-plt.figure(figsize=(12,6))
+if portfolio_history:
+    portfolio = np.array(portfolio_history)
 
-plt.plot(
-    portfolio,
-    label="Portfolio Value",
-    linewidth=2
-)
+    plt.figure(figsize=(12, 6))
 
-plt.legend()
+    plt.plot(
+        portfolio,
+        label="Portfolio Value",
+        linewidth=2
+    )
 
-plt.title("Portfolio Value")
+    plt.legend()
 
-plt.xlabel("Step")
+    plt.title("Portfolio Value")
 
-plt.ylabel("Portfolio")
+    plt.xlabel("Step")
 
-plt.grid(True)
+    plt.ylabel("Portfolio")
 
-plt.show()
+    plt.grid(True)
+
+    plt.show()
 
 
 # ----------------------------------------
