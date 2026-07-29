@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from sb3_contrib import RecurrentPPO
 
 from data_processor import CryptoDataProcessor
 from Environment import Environment
@@ -15,9 +14,7 @@ processor = CryptoDataProcessor(
 
 train_df, val_df, test_df, features = processor.process()
 
-model = RecurrentPPO.load(
-    "models/ppo_crypto_realistic"
-)
+
 
 # Validation evaluation (0.5 year)
 val_env = Environment(
