@@ -4,7 +4,7 @@ import pandas as pd
 from sb3_contrib import RecurrentPPO
 
 from data_processor import CryptoDataProcessor
-from trading_environment_v2 import CryptoTradingEnvV2
+from Environment import Environment
 
 import os
 from Performance import generate_report
@@ -20,7 +20,7 @@ model = RecurrentPPO.load(
 )
 
 # Validation evaluation (0.5 year)
-val_env = CryptoTradingEnvV2(
+val_env = Environment(
     df=val_df,
     features=features,
     initial_balance=10000,
@@ -31,11 +31,10 @@ val_env = CryptoTradingEnvV2(
 )
 val_obs, _ = val_env.reset()
 val_done = False
-lstm_states = None
 episode_start = np.array([True])
 val_portfolio_history = []
 while not val_done:
-    action, lstm_states = model.predict(val_obs, state=lstm_states, episode_start=episode_start, deterministic=True)
+    action,
     val_obs, reward, val_done, _, info = val_env.step(action)
     episode_start = np.array([False])
     val_portfolio_history.append({
@@ -61,7 +60,7 @@ for key, value in val_report.items():
 
 # Test evaluation (0.5 year)
 
-env = CryptoTradingEnvV2(
+env = Environment(
     df=test_df,
     features=features,
 
@@ -76,46 +75,28 @@ env = CryptoTradingEnvV2(
     take_profit=0.10
 )
 
-observation, info = env.reset()
+
 
 done = False
-lstm_states = None
-episode_start = np.array([True])
 
-portfolio_history = []
+observation, info = env.reset()
 
 while not done:
 
-    action, lstm_states = model.predict(
+    action = agent.select_action(
         observation,
-        state=lstm_states,
-        episode_start=episode_start,
-        deterministic=True
+        epsilon=0.0      # Pure exploitation
     )
 
-    episode_start = np.array([False])
+    observation, reward, done, _, info = env.step(action)
 
-    observation, reward, done, _, info = (
-        env.step(action)
-    )
-
-    portfolio_history.append(
-        {
-            "step": env.step_idx,
-
-            "portfolio_value":
-                info["portfolio_value"],
-
-            "cash":
-                info["cash"],
-
-            "btc":
-                info["btc"],
-
-            "reward":
-                reward
-        }
-    )
+    portfolio_history.append({
+        "step": env.step_idx,
+        "portfolio_value": info["portfolio_value"],
+        "cash": info["cash"],
+        "btc": info["btc"],
+        "reward": reward
+    })
 
 os.makedirs("results", exist_ok=True)
 results_df = pd.DataFrame(portfolio_history)
@@ -130,4 +111,4 @@ for key, value in report.items():
     if isinstance(value, float):
         print(f"{key}: {value:.2f}")
     else:
-        print(f"{key}: {value}")
+        print(f"{key}: {value}")
