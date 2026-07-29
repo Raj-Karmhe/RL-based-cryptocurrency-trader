@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+data/*.csv
+data/*.pkl
+models/*.pkl
+.vscode/
+.idea/
+.DS_Store

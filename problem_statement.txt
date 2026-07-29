@@ -1,0 +1,75 @@
+1. End-to-End RL based Strategy in Cryptocurrency
+markets
+(4-6 members)
+Background
+Alpha is an aspiring software engineer. He wants to get the highest paying job, as he
+considers his skills to be top grade (narcissistic)! He learns that a specific company
+LameStreet, that creates software for trading in various financial markets around the
+world, remains his best choice. But he needs to have a good project to be selected.
+He has stumbled upon the following project. Help Alpha to get into LameStreet by
+completing this project (in the process, you might become eligible enough to get in
+yourself)!
+Applying Reinforcement Learning (RL) to financial markets is a notoriously difficult
+challenge. While beginner models often focus simply on predicting price direction,
+real-world algorithmic trading requires a deep focus on portfolio management, risk
+mitigation, and surviving market friction.
+A pure predictive model without stop-losses, take-profits, or intelligent capital alloca
+tion is effectively gambling. Furthermore, strategies that appear profitable in standard
+simulations often collapse in the real world due to transaction costs and execution slip
+page. This project requires you to build a complete, robust algorithmic trading pipeline
+that treats risk management and position sizing as primary components, rather than
+afterthoughts.
+Objective
+Design, train, and backtest an end-to-end Reinforcement Learning agent to trade a
+single cryptocurrency using only historical OHLCV data. The strategy must explicitly
+incorporate dynamic position sizing (allocating capital between the asset and cash)
+and strict risk management protocols (stop-loss and take-profit mechanisms). The
+final agent must be evaluated on a strictly separated out-of-sample test dataset using
+a backtesting engine that accounts for real-world execution costs.
+Scope of Work
+• Data Pipeline:– Acquire approximately 5 years of historical OHLCV (Open, High, Low, Close,
+Volume) data for a single cryptocurrency of your choice.– Process the data to make it ready for the RL agent. You are free to do any kind
+of data processing you want. You might want to add some features [technical
+indicators].
+10
+Advanced Problem Statements
+Science & Technology Council, IIT Indore– You must strictly isolate the final 6 months of the 5-year dataset as out-of-sample
+test data.
+• Model & Strategy Design– Formulate the state space, action space, and reward function. It will be preferrable
+if your action space is continuous.– Create a suitable environment.– Select and train an appropriate RL algorithm (e.g., DQN, PPO, SAC).– The agent must only be trained on the initial 4.5 years of data.
+• Strategy Accessories (Mandatory):– Position Sizing– Risk Management (take-profit and stop-loss)
+Implementation Note: You may integrate these directly into the RL model’s action
+space/reward, use a separate RL/ML model, or apply them as fixed mathematical
+rules (Free Will!).
+• Backtesting & Evaluation:– Evaluate the final strategy on the 6-month test data, and compile the results into
+a csv file.– Following metrics are mandatory to be included in the results- returns, drawdown,
+sharpe ratio, win rate.– DO NOT CREATE YOUR OWN BACKTESTER!
+• Bonus Extensions:
+Make your strategy work for multiple assets. That is, you can create a RL model
+that can help you trade on 2 or more cryptocurrencies simultaneously. You can try
+changing action space and your position sizer for this. ONLY ATTEMPT THIS
+WHEN YOU ARE DONE WITH THE BASE TASK!
+Constraints
+• External Library Usage: You are free to use any external library or framework
+you want for any part of the pipeline (e.g., data acquisition, environment creation,
+RL training, or backtesting). However, you must explicitly mention and rigorously
+justify the choice of each external library in your final report.
+• Data Restriction: You are only allowed to use the historical OHLCV data. No
+alternative data, sentiment analysis, or order book depth data may be used.
+• Market Friction: The backtesting environment must strictly simulate real-world
+constraints, specifically slippage and transaction costs (exchange fees).
+• Data Leakage: Absolutely no training or hyperparameter tuning may occur on the
+6-month test dataset.
+11
+Advanced Problem Statements
+Science & Technology Council, IIT Indore
+Mandatory Deliverables
+• Source Code
+• Documentation
+• Backtest Results
+Resources and References
+• Data: Binance Historical Data API or Yahoo Finance (via yfinance) or ccxt.
+• Environments: Gymnasium (gymnasium.farama.org) or FinRL (for reference ar
+chitectures) or you can go ahead and write your own code for environment.
+• Backtesting: VectorBT documentation (vectorbt.dev) or Backtrader (backtrader.com)
+or any other backtester of your choice.

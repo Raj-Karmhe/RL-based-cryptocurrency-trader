@@ -1,0 +1,14 @@
+[
+    "1h_atr_pct",
+    "1h_sma_20_distance",
+    "1h_sar_distance",
+    "1h_ichimoku_tenkan_distance",
+    "1d_obv_zscore",
+    "1d_adl_zscore",
+    "1d_donchian_pct",
+    "1d_macd",
+    "1d_atr_pct",
+    "1d_mfi",
+    "1d_bb_bandwidth_zscore",
+    "1d_ao_zscore"
+]
