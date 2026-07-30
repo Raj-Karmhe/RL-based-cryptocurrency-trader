@@ -455,6 +455,61 @@ PPO Reinforcement Learning Agent
           ▼
 Adaptive Trading Decisions
 ```
+---
+
+# Experimental Observations
+
+The HMM module was integrated into the reinforcement learning pipeline as an additional feature extraction stage.
+
+Two experimental configurations were evaluated.
+
+## Configuration 1
+
+- Technical Indicators
+- PPO Trading Agent
+
+## Configuration 2
+
+- Technical Indicators
+- Hidden Markov Model
+- PPO Trading Agent
+
+The HMM successfully identified statistically distinct market regimes and augmented the observation space with four additional regime features.
+
+While the HMM consistently produced meaningful regime segmentation, the improvement in overall trading profitability was **not consistent across all experiments**. During different debugging iterations and environment modifications, overall returns varied, indicating that the final trading performance depends not only on regime detection but also on several interconnected factors such as:
+
+- Reward function design
+- Portfolio management strategy
+- Action execution logic
+- Transaction cost modeling
+- PPO hyperparameter tuning
+- Market data characteristics
+
+These observations suggest that market regime detection alone is insufficient to guarantee higher returns, but it provides valuable contextual information that can improve the learning capability of downstream reinforcement learning models when combined with appropriate environment design and training procedures.
+
+---
+
+# Limitations
+
+The current implementation uses four statistical features:
+
+- Daily Return
+- Rolling Volatility
+- ATR / Close
+- Volume Change
+
+Although these features capture short-term market behavior, they do not explicitly model long-term trends.
+
+Future improvements may include additional features such as:
+
+- RSI
+- MACD
+- ADX
+- Moving Average Slope
+- Bollinger Band Width
+- Momentum Indicators
+
+to produce richer and more informative market regimes.
 
 ---
 
