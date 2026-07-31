@@ -737,6 +737,11 @@ def run_test_and_visualize(override_fee: float = None, override_slippage: float 
         turb_threshold = float(np.nanpercentile(train_turb[train_turb > 0], config.TURBULENCE_PERCENTILE))
         test_df['Turbulence'] = compute_turbulence(test_df['Close']).values
 
+        # ── Regime Volatility Leakage Fix (Bug 2) ──
+        from reward_functions import compute_rolling_std
+        train_sigmas = compute_rolling_std(train_df['Close'].values)
+        config.MEAN_VOL_TRAINING = float(np.nanmean(train_sigmas))
+
         # Probe model first (no env) to read its obs + action spaces.
         # This lets old long-only 22-feat models and new long+short 10-feat models
         # both load correctly without touching config.py.

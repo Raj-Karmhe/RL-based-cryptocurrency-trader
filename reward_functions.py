@@ -156,8 +156,8 @@ class AdaptiveRiskControlReward(RewardFunction):
                 # ── Bull: decreasing hold bonus ──────────────────────────────
                 if position > 0.05: # Long position
                     self._bull_long_hold_steps += 1
-                    # Bonus decreases linearly to 0 over 48 hours (2 days)
-                    hold_bonus = max(0.0, self.bull_hold_bonus_max * (1.0 - self._bull_long_hold_steps / 48.0))
+                    # Bonus decreases linearly to 0 over 240 hours (10 days)
+                    hold_bonus = max(0.0, self.bull_hold_bonus_max * (1.0 - self._bull_long_hold_steps / 240.0))
                     reward += hold_bonus
                 else:
                     self._bull_long_hold_steps = 0
@@ -252,7 +252,7 @@ class AsymmetricMarketReward(RewardFunction):
                 # NEW: linearly decreasing bonus for holding long
                 if position > 0.05:
                     self._bull_long_hold_steps += 1
-                    hold_bonus = max(0.0, self.bull_hold_bonus_max * (1.0 - self._bull_long_hold_steps / 48.0))
+                    hold_bonus = max(0.0, self.bull_hold_bonus_max * (1.0 - self._bull_long_hold_steps / 240.0))
                     reward += hold_bonus
                 else:
                     self._bull_long_hold_steps = 0

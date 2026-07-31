@@ -76,7 +76,7 @@ class TrainingMonitorCallback(BaseCallback):
     • Approximate Sharpe ratio over recent episodes
     """
 
-    def __init__(self, log_freq: int = 10, verbose: int = 1):
+    def __init__(self, log_freq: int = 1, verbose: int = 1):
         super().__init__(verbose)
         self.log_freq          = log_freq
         self._ep_reward        = 0.0
@@ -84,6 +84,8 @@ class TrainingMonitorCallback(BaseCallback):
         self.episode_rewards   = []
         self.episode_lengths   = []
         self.portfolio_values  = []
+        self.episode_trades    = []
+        self.episode_win_rates = []
         self.timesteps_log     = []
 
     def _on_step(self) -> bool:
@@ -98,8 +100,25 @@ class TrainingMonitorCallback(BaseCallback):
 
             # Extract portfolio value from info dict
             infos = self.locals.get("infos", [{}])
+            trades_count = 0
+            win_rate = 0.0
+            
             if infos and "portfolio_value" in infos[0]:
                 self.portfolio_values.append(infos[0]["portfolio_value"])
+            else:
+                self.portfolio_values.append(100000.0)
+
+            if infos and "trade_log" in infos[0]:
+                trade_log = infos[0]["trade_log"]
+                trades_count = len(trade_log)
+                wins = sum(1 for t in trade_log if t.get("exit_reason") == "take_profit")
+                losses = sum(1 for t in trade_log if t.get("exit_reason") in ["stop_loss", "turbulence"])
+                total_closed = wins + losses
+                if total_closed > 0:
+                    win_rate = (wins / total_closed) * 100.0
+                    
+            self.episode_trades.append(trades_count)
+            self.episode_win_rates.append(win_rate)
 
             n = len(self.episode_rewards)
             if self.verbose and n % self.log_freq == 0:
@@ -108,9 +127,9 @@ class TrainingMonitorCallback(BaseCallback):
                 avg_p  = np.mean(self.portfolio_values[-10:]) if self.portfolio_values else 0
                 print(
                     f"  Ep {n:5d} | Steps {self.num_timesteps:8,} | "
-                    f"Avg Reward: {avg_r:8.5f} | "
-                    f"Last Portfolio: ${last_p:12,.0f} | "
-                    f"Avg Portfolio: ${avg_p:12,.0f}"
+                    f"Ep Reward: {self._ep_reward:8.5f} | Avg Reward: {avg_r:8.5f} | "
+                    f"Ep Portfolio: ${last_p:10,.0f} | Avg Portfolio: ${avg_p:10,.0f} | "
+                    f"Trades: {trades_count:4d} | Win Rate: {win_rate:5.1f}%"
                 )
 
             # Reset for next episode
@@ -123,17 +142,46 @@ class TrainingMonitorCallback(BaseCallback):
         """Plots the training reward curve and saves to disk."""
         if not self.episode_rewards:
             return
-        smoothed = pd.Series(self.episode_rewards).rolling(20, min_periods=1).mean()
-        fig, ax  = plt.subplots(figsize=(12, 4))
-        ax.plot(self.timesteps_log, self.episode_rewards, alpha=0.3,
-                color="#95a5a6", label="Episode Reward")
-        ax.plot(self.timesteps_log, smoothed, color="#2980b9",
-                linewidth=2, label="Smoothed (20 ep)")
-        ax.set_title("Training Reward Curve", fontsize=12, fontweight="bold")
-        ax.set_xlabel("Timesteps")
-        ax.set_ylabel("Episode Reward")
-        ax.legend()
-        ax.grid(True, alpha=0.3)
+        smoothed_r = pd.Series(self.episode_rewards).rolling(20, min_periods=1).mean()
+        smoothed_p = pd.Series(self.portfolio_values).rolling(20, min_periods=1).mean()
+        smoothed_t = pd.Series(self.episode_trades).rolling(20, min_periods=1).mean()
+        smoothed_w = pd.Series(self.episode_win_rates).rolling(20, min_periods=1).mean()
+
+        fig, axs = plt.subplots(4, 1, figsize=(12, 14), sharex=True)
+        
+        # Reward
+        axs[0].plot(self.timesteps_log, self.episode_rewards, alpha=0.3, color="#95a5a6", label="Episode Reward")
+        axs[0].plot(self.timesteps_log, smoothed_r, color="#2980b9", linewidth=2, label="Smoothed (20 ep)")
+        axs[0].set_title("Training Reward", fontweight="bold")
+        axs[0].set_ylabel("Reward")
+        axs[0].legend()
+        axs[0].grid(True, alpha=0.3)
+        
+        # Portfolio
+        axs[1].plot(self.timesteps_log, self.portfolio_values, alpha=0.3, color="#95a5a6", label="Episode Portfolio")
+        axs[1].plot(self.timesteps_log, smoothed_p, color="#27ae60", linewidth=2, label="Smoothed (20 ep)")
+        axs[1].set_title("Portfolio Value", fontweight="bold")
+        axs[1].set_ylabel("USD")
+        axs[1].legend()
+        axs[1].grid(True, alpha=0.3)
+        
+        # Trades
+        axs[2].plot(self.timesteps_log, self.episode_trades, alpha=0.3, color="#95a5a6", label="Episode Trades")
+        axs[2].plot(self.timesteps_log, smoothed_t, color="#8e44ad", linewidth=2, label="Smoothed (20 ep)")
+        axs[2].set_title("Number of Trades", fontweight="bold")
+        axs[2].set_ylabel("Trades")
+        axs[2].legend()
+        axs[2].grid(True, alpha=0.3)
+        
+        # Win Rate
+        axs[3].plot(self.timesteps_log, self.episode_win_rates, alpha=0.3, color="#95a5a6", label="Episode Win Rate")
+        axs[3].plot(self.timesteps_log, smoothed_w, color="#f39c12", linewidth=2, label="Smoothed (20 ep)")
+        axs[3].set_title("Win Rate (%)", fontweight="bold")
+        axs[3].set_xlabel("Timesteps")
+        axs[3].set_ylabel("Win Rate (%)")
+        axs[3].legend()
+        axs[3].grid(True, alpha=0.3)
+        
         plt.tight_layout()
         plt.savefig(path, dpi=150)
         plt.close()

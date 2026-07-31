@@ -214,7 +214,8 @@ class CryptoTradingEnv(gym.Env):
         # Precompute numpy arrays for speed inside step()
         self.features    = self.df[feature_cols].values.astype(np.float32)
         self.closes      = self.df["Close"].values.astype(np.float64)
-        self.regimes, self.sigmas = classify_regimes(self.df)
+        mean_vol = getattr(config, "MEAN_VOL_TRAINING", None)
+        self.regimes, self.sigmas = classify_regimes(self.df, mean_vol_training=mean_vol)
         self.adaptive_risk_reward = AdaptiveRiskControlReward()
         self.asymmetric_reward = AsymmetricMarketReward()
         self.atrs        = self.df["ATR"].values.astype(np.float64)
@@ -286,9 +287,9 @@ class CryptoTradingEnv(gym.Env):
 
         self.risk_manager.reset()
 
-        # Fill the observation buffer with the past SEQ_LEN rows
-        start_idx = self.current_step - self.seq_len
-        self._obs_buf = self.features[start_idx:self.current_step].copy()
+        # Fill the observation buffer with the past SEQ_LEN rows (including current_step to prevent missing a bar)
+        start_idx = self.current_step - self.seq_len + 1
+        self._obs_buf = self.features[start_idx:self.current_step + 1].copy()
 
         return self._get_obs(), {}
 
@@ -479,6 +480,7 @@ class CryptoTradingEnv(gym.Env):
             "total_slippage":    self.total_slippage,
             "force_exit":        force_exit,
             "exit_reason":       exit_reason,
+            "trade_log":         self.trade_log,
             "current_price":     current_price,       # bar T — execution price
             "revaluation_price": revaluation_price,   # bar T+1 — mark-to-market price
         }
